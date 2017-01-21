@@ -91,5 +91,69 @@ $diccionario = {
   Booleano: /\A(true|false)\z/,
   Numero: /\A\d+\.*\d+\z/,
   OpLogico: /\A(and|or|not)\z/,
-  OpComparacion: 
+  OpComparacion: /\A(==|\/=|>=|<=|>|<)\z/,
+  #OpAritmetico: /\A(-|*|\/|%|div|mod|+)\z/
 }
+
+class Lexer
+  attr_reader :file
+
+  def initialize input
+    @file = input
+    @tokens = []
+    @numL = 0
+    @numC = 1
+  end
+
+
+  def leerPorLinea
+
+    return if @file.empty?
+    claseInst = CaractInesperado
+
+    @file.each_line do |line|
+      @numL+=1
+
+      puts line
+      while line !~ /\n/
+        #puts line
+        if line =~ /\A\s+\z/
+          @numC+=$&.length
+          $&.times {line.sub(" ","")}
+        end
+        $diccionario.each do |clase,regex|
+
+          if line =~ regex
+            claseInst = Object::const_get(clase)
+            break
+          end
+        end
+=begin
+
+        if $&.nil? and claseInst.eql? CaractInesperado
+          #revisar regex
+          if file =~ /\A({|}|:)|[A-Z]/
+            raise CaractInesperado.new($&,@numL,@numC)
+          end
+        end
+=end
+
+        @tokens << claseInst.new($&,@numL,@numC)
+
+
+        #puts @tokens[-1]
+        #$&.method.inspect
+        line.sub!("true","")
+        line.sub!("false","\n")
+        line.sub!("9.9","\n")
+
+        #@numC = $&.length
+        #line = line[$&.length..line.length-1]
+      end
+
+    end
+    return @tokens
+  end
+
+
+end

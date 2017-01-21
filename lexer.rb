@@ -1,4 +1,6 @@
 require_relative 'retina'
 
-tok = Numero.new "}", 1, 1
-puts tok
+input = "false true"
+
+lexer = Lexer.new(input)
+puts(lexer.leerPorLinea)
