@@ -88,8 +88,94 @@ class CaractInesperado < RuntimeError
 end
 
 $diccionario = {
-  Booleano: /\A(true|false)\z/,
-  Numero: /\A\d+\.*\d+\z/,
-  OpLogico: /\A(and|or|not)\z/,
-  OpComparacion: 
+  Booleano: /\A(true|false)\b/,
+  Numero: /\A\d+\.*\d+\b/,
+  OpLogico: /\A(and|or|not)\b/,
+  OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
+  OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
+  PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
+  TipoDato: /\A(number|boolean)\b/,
+  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
+  Signo: /\A("|"|;|=|\\|#|->)/
 }
+
+class Lexer
+  attr_reader :file
+
+  def initialize input
+    @file = input
+    @tokens = []
+    @numL = 0
+    @numC = 1
+  end
+
+
+  def leerPorLinea
+
+    return if @file.empty?
+    claseInst = CaractInesperado
+
+    @file.each_line do |line|
+      #puts "a"
+      @numL+=1
+
+      while line !~ /^$/ or line.nil?
+        #puts "b"
+
+        if line =~ /\A\s+/
+          #puts line+" 1"
+          #puts "..#{$&}.."
+          @numC+=$&.length
+          #puts @numC
+          line = line[$&.to_s.length..line.length-1]
+          #puts line+" 2"
+        end
+
+        $diccionario.each do |clase,regex|
+
+          $centinela = false
+
+
+
+          if line =~ regex
+            claseInst = Object::const_get(clase)
+            #puts "#{$&} #{claseInst}"
+            centinela = true
+            break
+          end
+        end
+
+        if $centinela and claseInst.eql? CaractInesperado
+          #revisar regex
+          if line =~ /\A({|}|:)|[A-Z]\w*/
+            #puts "f"
+            raise CaractInesperado.new($&,@numL,@numC)
+          end
+        end
+
+        @tokens << claseInst.new($&,@numL,@numC)
+
+        #puts ".#{$&}."
+        l = $&.to_s.length
+        @numC += l
+        line = line[l..line.length-1]
+        #puts line + " 3"
+
+        if line =~ /\A\s+/
+          #puts line+" 1"
+          #puts "..#{$&}.."
+          @numC+=$&.length
+          #puts @numC
+          line = line[$&.to_s.length..line.length-1]
+          #puts line+" 2"
+        end
+
+        #line = line[$&.length..line.length-1]
+      end
+
+    end
+    return @tokens
+  end
+
+
+end
