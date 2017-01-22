@@ -100,7 +100,7 @@ $diccionario = {
 }
 
 class Lexer
-  attr_reader :file
+  attr_reader :file, :tokens
 
   def initialize input
     @file = input
@@ -116,9 +116,9 @@ class Lexer
     claseInst = CaractInesperado
 
     @file.each_line do |line|
-      #puts "a"
+      #puts line
       @numL+=1
-
+      @numC = 1;
       while line !~ /^$/ or line.nil?
         #puts "b"
 
@@ -134,6 +134,7 @@ class Lexer
         $diccionario.each do |clase,regex|
 
           $centinela = false
+          claseInst = CaractInesperado
 
 
 
@@ -145,7 +146,7 @@ class Lexer
           end
         end
 
-        if $centinela and claseInst.eql? CaractInesperado
+        if $centinela or claseInst.eql? CaractInesperado
           #revisar regex
           if line =~ /\A({|}|:)|[A-Z]\w*/
             #puts "f"
