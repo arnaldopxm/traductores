@@ -96,7 +96,7 @@ $diccionario = {
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
   Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
-  Signo: /\A("|"|;|=|\\|#|\(|\)|->)/
+  Signo: /\A("|"|;|=|\\|\(|\)|->)/
 }
 
 class Lexer
@@ -119,6 +119,12 @@ class Lexer
       #puts line
       @numL+=1
       @numC = 1;
+
+      if line=~ /\#/
+        puts "\#"
+        next
+      end
+
       while line !~ /^$/ or line.nil?
         #puts "b"
 
@@ -135,8 +141,6 @@ class Lexer
 
           $centinela = false
           claseInst = CaractInesperado
-
-
 
           if line =~ regex
             claseInst = Object::const_get(clase)
