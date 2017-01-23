@@ -161,17 +161,17 @@ class Lexer
           break
         end
 
-        #caso caracter inesperado
-        if $centinela or claseInst.eql? CaractInesperado
-
-          #agregar a errores
-          line =~ /\A({|}|:)|[A-Z]\w*/
-          @errors << CaractInesperado.new($&,@numL,@numC)
-
         # caso hizo match
-        else
+        if !$&.nil?
           #agregar a tokens
           @tokens << claseInst.new($&,@numL,@numC)
+
+        #caso caracter inesperado
+        else
+          @errors << CaractInesperado.new(line[0,1],@numL,@numC)
+          @numC+=1
+          line = line[1..line.length-1]
+          break
         end
 
         #sumas los espacios necesarios, y recorta la linea
