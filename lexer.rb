@@ -13,10 +13,12 @@ def main
     abort("Por favor introduzca un archivo valido en formato .rtn")
   end
 
+  file = File.read(ARGV[0])
+
   input = "  true false 123 = and div mod x==10
   10 xa if   "
   #puts file
-  lexer = Lexer.new(input)
+  lexer = Lexer.new(file)
 #puts lexer.leerPorLinea
   puts ""
   begin
