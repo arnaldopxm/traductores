@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 class Token
   attr_reader :token, :lin, :col
 
