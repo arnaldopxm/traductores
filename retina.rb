@@ -68,7 +68,7 @@ class Identificador < Token
 end
 
 class Signo < Token
-  # ",;,=,\,#,->,
+  # ",;,=,\,->,(,)
   def to_s
     "line #{lin}, columna #{col}: signo '#{token}'"
   end
@@ -92,95 +92,102 @@ $diccionario = {
   Numero: /\A\d+(\.\d+)*\b/,
   OpLogico: /\A(and|or|not)\b/,
   OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
+  Signo: /\A("|"|;|=|\\|\(|\)|->|,)/,
   OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
-  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
-  Signo: /\A("|"|;|=|\\|\(|\)|->)/
+  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/
 }
 
+
 class Lexer
-  attr_reader :file, :tokens
+  attr_reader :file, :tokens, :errors
 
   def initialize input
     @file = input
     @tokens = []
+    @errors = []
     @numL = 0
     @numC = 1
   end
 
-
   def leerPorLinea
 
+    #retornar si el archivo es vacio
     return if @file.empty?
     claseInst = CaractInesperado
 
+    #para cada linea del archivo
     @file.each_line do |line|
       #puts line
       @numL+=1
       @numC = 1;
 
-      if line=~ /\#/
-        puts "\#"
+      # si la linea es un comentario. Ignorarla
+      if line=~ /\A\#/
         next
       end
 
+      # mientras que la linea no este vacia
       while line !~ /^$/ or line.nil?
-        #puts "b"
-
+        # eliminar espacios en blanco
         if line =~ /\A\s+/
-          #puts line+" 1"
-          #puts "..#{$&}.."
           @numC+=$&.length
-          #puts @numC
           line = line[$&.to_s.length..line.length-1]
-          #puts line+" 2"
         end
 
+        # chequear tokens
         $diccionario.each do |clase,regex|
 
           $centinela = false
           claseInst = CaractInesperado
 
+          #si es comentario
+          if line =~ /\A\#/
+            claseInst = nil
+            break
+          end
+
+          #si hace match
           if line =~ regex
             claseInst = Object::const_get(clase)
-            puts "#{$&} #{claseInst}"
             centinela = true
             break
           end
         end
 
-        if $centinela or claseInst.eql? CaractInesperado
-          #revisar regex
-          if line =~ /\A({|}|:)|[A-Z]\w*/
-            #puts "f"
-            raise CaractInesperado.new($&,@numL,@numC)
-          end
+        #caso es un comentario
+        if claseInst.nil?
+          break
         end
 
-        @tokens << claseInst.new($&,@numL,@numC)
+        #caso caracter inesperado
+        if $centinela or claseInst.eql? CaractInesperado
 
-        #puts ".#{$&}."
+          #agregar a errores
+          line =~ /\A({|}|:)|[A-Z]\w*/
+          @errors << CaractInesperado.new($&,@numL,@numC)
+
+        # caso hizo match
+        else
+          #agregar a tokens
+          @tokens << claseInst.new($&,@numL,@numC)
+        end
+
+        #sumas los espacios necesarios, y recorta la linea
         l = $&.to_s.length
         @numC += l
         line = line[l..line.length-1]
-        #puts line + " 3"
 
+        #elimina espacios en blanco
         if line =~ /\A\s+/
-          #puts line+" 4"
-          #puts "...#{$&}..."
           @numC+=$&.length
-          #puts @numC
           line = line[$&.to_s.length..line.length-1]
-          #puts line+" 5"
         end
-
-        #line = line[$&.length..line.length-1]
       end
-
     end
+
     return @tokens
+
   end
-
-
 end

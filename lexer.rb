@@ -1,38 +1,35 @@
 require_relative 'retina'
 
-=begin
-unless ARGV[0].end_with? ".rtn"
-  abort("Por favor introduzca un archivo valido en formato .rtn")
-end
-
-file = File::read(ARGV[0])
-=end
 def main
 
+  #chequear extension del archivo
   unless ARGV[0].end_with? ".rtn"
     abort("Por favor introduzca un archivo valido en formato .rtn")
   end
 
-  file = File.read(ARGV[0])
-
-  input = "  true false 123 = and div mod x==10
-  10 xa if   "
-  #puts file
-  lexer = Lexer.new(file)
-#puts lexer.leerPorLinea
-  puts ""
+  #abrir el archivo
   begin
-    lexer.leerPorLinea
-  rescue CaractInesperado => e
-    puts e
-    puts ""
+    file = File.read(ARGV[0])
+  rescue
+    puts "Archivo no Encontrado"
     return
   end
 
-  lexer.tokens.each do |t|
-    puts t
+  #crear lexer
+  lexer = Lexer.new(file)
+
+  #leer tokens
+  lexer.leerPorLinea
+
+  #imprimir tokens
+  puts ""
+  if !lexer.errors.empty?
+    puts lexer.errors
+  else
+    puts lexer.tokens
   end
   puts ""
 end
 
+#llamada a la funcion
 main
