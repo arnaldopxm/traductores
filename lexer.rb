@@ -11,7 +11,9 @@ def main
   begin
     file = File.read(ARGV[0])
   rescue
+    puts""
     puts "Archivo no Encontrado"
+    puts ""
     return
   end
 

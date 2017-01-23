@@ -1,0 +1,4 @@
+func circle(number radio)
+begin
+    arc(360, radio);
+end;
