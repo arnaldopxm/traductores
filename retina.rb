@@ -89,14 +89,14 @@ end
 
 $diccionario = {
   Booleano: /\A(true|false)\b/,
-  Numero: /\A\d+\.*\d+\b/,
+  Numero: /\A\d+(\.\d+)*\b/,
   OpLogico: /\A(and|or|not)\b/,
   OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
   OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
   Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
-  Signo: /\A("|"|;|=|\\|#|->)/
+  Signo: /\A("|"|;|=|\\|#|\(|\)|->)/
 }
 
 class Lexer
@@ -140,7 +140,7 @@ class Lexer
 
           if line =~ regex
             claseInst = Object::const_get(clase)
-            #puts "#{$&} #{claseInst}"
+            puts "#{$&} #{claseInst}"
             centinela = true
             break
           end
@@ -163,12 +163,12 @@ class Lexer
         #puts line + " 3"
 
         if line =~ /\A\s+/
-          #puts line+" 1"
-          #puts "..#{$&}.."
+          #puts line+" 4"
+          #puts "...#{$&}..."
           @numC+=$&.length
           #puts @numC
           line = line[$&.to_s.length..line.length-1]
-          #puts line+" 2"
+          #puts line+" 5"
         end
 
         #line = line[$&.length..line.length-1]
