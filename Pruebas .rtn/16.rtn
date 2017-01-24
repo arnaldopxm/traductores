@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 with
     number i;
 do
@@ -9,3 +10,20 @@ do
     endo;
     wrtiee1 i; # Imprime 27
 end;
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             
+>>>>>>> Form-2

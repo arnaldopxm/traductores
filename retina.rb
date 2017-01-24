@@ -168,10 +168,14 @@ class Lexer
 
         #caso caracter inesperado
         else
-          @errors << CaractInesperado.new(line[0,1],@numL,@numC)
-          @numC+=1
-          line = line[1..line.length-1]
-          break
+          if line =~ /\A[A-Z]\w*\b/
+            @errors << CaractInesperado.new($&,@numL,@numC)
+          else
+            @errors << CaractInesperado.new(line[0,1],@numL,@numC)
+            @numC+=1
+            line = line[1..line.length-1]
+            break
+          end
         end
 
         #sumas los espacios necesarios, y recorta la linea
