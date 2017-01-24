@@ -1,0 +1,29 @@
+<<<<<<< HEAD
+with
+    number i;
+do
+    i = 27;
+    witha
+        number i = 37;
+    dode
+        write i; # Imprime 37
+    endo;
+    wrtiee1 i; # Imprime 27
+end;
+=======
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             
+>>>>>>> Form-2
