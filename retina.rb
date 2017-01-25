@@ -104,7 +104,7 @@ $diccionario = {
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
   Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
-  Strings: /\A"(.|\s)*[^\\]"/
+  Strings: /\A("(.|\s)*[^\\,\n]?")|\A"[^"]*\n/
 }
 
 
@@ -119,31 +119,23 @@ class Lexer
     @numC = 1
   end
 
+  #funcion procesar strings
   def procesarString val
-
-  string = val.to_s
-  #procesar string
+  string = val
   for pos in 1..string.length - 2
-    puts pos
 
     if string[pos,2]=~/\\\\/ or string[pos-1,2]=~/\\\\/
-      puts "ww" + string[pos,2]
       next
     end
 
     if string[pos] =~ /\\/
-      puts string
 
       if string[pos+1] !~ /(n|")/ or pos+1 == string.length - 1
-        #@numC += 2+pos
         x = string[pos,1]
         if pos+1 != string.length-1
           x = string[pos,2]
         end
-
-        puts "eror"
         @errors << CaractInesperado.new(x,@numL,@numC+pos)
-        #@numC += 1
       end
     end
   end
@@ -158,7 +150,6 @@ end
 
     #para cada linea del archivo
     @file.each_line do |line|
-      #puts line
       @numL+=1
       @numC = 1;
 
@@ -169,6 +160,7 @@ end
 
       # mientras que la linea no este vacia
       while line !~ /^$/ or line.nil?
+
         # eliminar espacios en blanco
         if line =~ /\A\s+/
           @numC+=$&.length
@@ -189,7 +181,6 @@ end
 
           #si hace match
           if line =~ regex
-            puts "match " + $&
             claseInst = Object::const_get(clase)
             centinela = true
             break
@@ -204,14 +195,23 @@ end
         #caso es un string
         if claseInst.eql? Strings
 
-          string = procesarString($&.to_s)
-          puts "ASDSA" + string
-          @tokens << claseInst.new(string,@numL,@numC)
-          @numC += string.length
-          line  = line[string.length..line.length-1]
-          puts line
-          next
+          if line =~ /\A"[^"]*\n/
 
+            procesarString($&[0..$&.length-2]+"\"")
+            @errors << CaractInesperado.new("\\n",@numL,@numC+line.length-1)
+            line = line[0,0]
+            next
+
+          else
+
+            line =~ /\A("(.|\s)*[^\\,\n]?")/
+            string = procesarString($&.to_s)
+            @tokens << claseInst.new(string,@numL,@numC)
+            @numC += string.length
+            line  = line[string.length..line.length-1]
+            next
+            
+          end
         end
 
         # caso hizo match
@@ -242,6 +242,10 @@ end
           line = line[$&.to_s.length..line.length-1]
         end
       end
+    end
+
+    @errors.each do |e|
+
     end
 
     return @tokens

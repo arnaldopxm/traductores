@@ -1,5 +1,8 @@
 program
 with do
 12.5
-"Hola como estas?\n wz\\ as \t" do
+"Hola como estas? \n wz\\ as "
+"Alo \t \nenterahsashj r \t"
+var x = true "as"
+"" do
 while
