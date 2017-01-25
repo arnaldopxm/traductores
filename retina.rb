@@ -74,6 +74,12 @@ class Signo < Token
   end
 end
 
+class Strings < Token
+  def to_s
+    "line #{lin}, columna #{col}: string '#{token}'"
+  end
+end
+
 class CaractInesperado < RuntimeError
   #{,},:
   def initialize carac, lin, col
@@ -87,16 +93,18 @@ class CaractInesperado < RuntimeError
   end
 end
 
+
 $diccionario = {
   Booleano: /\A(true|false)\b/,
   Numero: /\A\d+(\.\d+)*\b/,
   OpLogico: /\A(and|or|not)\b/,
   OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
-  Signo: /\A("|"|;|=|\\|\(|\)|->|,)/,
+  Signo: /\A(;|=|\\|\(|\)|->|,)/,
   OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
-  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/
+  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
+  Strings: /\A"(.|\s)*[^\\]"/
 }
 
 
@@ -111,6 +119,37 @@ class Lexer
     @numC = 1
   end
 
+  def procesarString val
+
+  string = val.to_s
+  #procesar string
+  for pos in 1..string.length - 2
+    puts pos
+
+    if string[pos,2]=~/\\\\/ or string[pos-1,2]=~/\\\\/
+      puts "ww" + string[pos,2]
+      next
+    end
+
+    if string[pos] =~ /\\/
+      puts string
+
+      if string[pos+1] !~ /(n|")/ or pos+1 == string.length - 1
+        #@numC += 2+pos
+        x = string[pos,1]
+        if pos+1 != string.length-1
+          x = string[pos,2]
+        end
+
+        puts "eror"
+        @errors << CaractInesperado.new(x,@numL,@numC+pos)
+        #@numC += 1
+      end
+    end
+  end
+  return string
+end
+
   def leerPorLinea
 
     #retornar si el archivo es vacio
@@ -124,7 +163,7 @@ class Lexer
       @numC = 1;
 
       # si la linea es un comentario. Ignorarla
-      if line=~ /\A\#/
+      if line =~ /\A\#/
         next
       end
 
@@ -150,6 +189,7 @@ class Lexer
 
           #si hace match
           if line =~ regex
+            puts "match " + $&
             claseInst = Object::const_get(clase)
             centinela = true
             break
@@ -159,6 +199,19 @@ class Lexer
         #caso es un comentario
         if claseInst.nil?
           break
+        end
+
+        #caso es un string
+        if claseInst.eql? Strings
+
+          string = procesarString($&.to_s)
+          puts "ASDSA" + string
+          @tokens << claseInst.new(string,@numL,@numC)
+          @numC += string.length
+          line  = line[string.length..line.length-1]
+          puts line
+          next
+
         end
 
         # caso hizo match
