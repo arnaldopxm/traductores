@@ -219,7 +219,7 @@ end
             @numC += string.length
             line  = line[string.length..line.length-1]
             next
-            
+
           end
         end
 
@@ -252,12 +252,5 @@ end
         end
       end
     end
-
-    @errors.each do |e|
-
-    end
-
-    return @tokens
-
   end
 end
