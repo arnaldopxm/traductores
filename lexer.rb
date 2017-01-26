@@ -1,3 +1,13 @@
+=begin
+	corrida: lexer.rb <archivo.rtn>
+	Analizador Lexicografico para el idioma retina
+Autores
+	-Arnaldo Quintero 13-11150
+	-Gabriel Gutierrez 13-10625
+
+Ultima modificacion: 25/01/2017
+=end
+
 require_relative 'retina'
 
 def main

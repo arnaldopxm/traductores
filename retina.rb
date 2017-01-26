@@ -1,3 +1,12 @@
+=begin
+	Funciones y clases para el analizador lexicografico lexer.rb
+Autores
+	-Arnaldo Quintero 13-11150
+	-Gabriel Gutierrez 13-10625
+
+Ultima modificacion: 25/01/2017
+=end
+
 class Token
   attr_reader :token, :lin, :col
 
@@ -74,6 +83,12 @@ class Signo < Token
   end
 end
 
+class Strings < Token
+  def to_s
+    "line #{lin}, columna #{col}: string '#{token}'"
+  end
+end
+
 class CaractInesperado < RuntimeError
   #{,},:
   def initialize carac, lin, col
@@ -87,16 +102,18 @@ class CaractInesperado < RuntimeError
   end
 end
 
+
 $diccionario = {
   Booleano: /\A(true|false)\b/,
   Numero: /\A\d+(\.\d+)*\b/,
   OpLogico: /\A(and|or|not)\b/,
   OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
-  Signo: /\A("|"|;|=|\\|\(|\)|->|,)/,
+  Signo: /\A(;|=|\\|\(|\)|->|,)/,
   OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
   PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
   TipoDato: /\A(number|boolean)\b/,
-  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/
+  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
+  Strings: /\A("(.|\s)*[^\\,\n]?")|\A"[^"]*\n/
 }
 
 
@@ -111,6 +128,29 @@ class Lexer
     @numC = 1
   end
 
+  #funcion procesar strings
+  def procesarString val
+  string = val
+  for pos in 1..string.length - 2
+
+    if string[pos,2]=~/\\\\/ or string[pos-1,2]=~/\\\\/
+      next
+    end
+
+    if string[pos] =~ /\\/
+
+      if string[pos+1] !~ /(n|")/ or pos+1 == string.length - 1
+        x = string[pos,1]
+        if pos+1 != string.length-1
+          x = string[pos,2]
+        end
+        @errors << CaractInesperado.new(x,@numL,@numC+pos)
+      end
+    end
+  end
+  return string
+end
+
   def leerPorLinea
 
     #retornar si el archivo es vacio
@@ -119,17 +159,17 @@ class Lexer
 
     #para cada linea del archivo
     @file.each_line do |line|
-      #puts line
       @numL+=1
       @numC = 1;
 
       # si la linea es un comentario. Ignorarla
-      if line=~ /\A\#/
+      if line =~ /\A\#/
         next
       end
 
       # mientras que la linea no este vacia
       while line !~ /^$/ or line.nil?
+
         # eliminar espacios en blanco
         if line =~ /\A\s+/
           @numC+=$&.length
@@ -161,6 +201,28 @@ class Lexer
           break
         end
 
+        #caso es un string
+        if claseInst.eql? Strings
+
+          if line =~ /\A"[^"]*\n/
+
+            procesarString($&[0..$&.length-2]+"\"")
+            @errors << CaractInesperado.new("\\n",@numL,@numC+line.length-1)
+            line = line[0,0]
+            next
+
+          else
+
+            line =~ /\A("(.|\s)*[^\\,\n]?")/
+            string = procesarString($&.to_s)
+            @tokens << claseInst.new(string,@numL,@numC)
+            @numC += string.length
+            line  = line[string.length..line.length-1]
+            next
+            
+          end
+        end
+
         # caso hizo match
         if !$&.nil?
           #agregar a tokens
@@ -189,6 +251,10 @@ class Lexer
           line = line[$&.to_s.length..line.length-1]
         end
       end
+    end
+
+    @errors.each do |e|
+
     end
 
     return @tokens
