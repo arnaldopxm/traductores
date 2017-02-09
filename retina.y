@@ -73,8 +73,8 @@ start retina
 
 rule
 
-	retina: 'program' codigo 'end' ';'
-		  | Funciones 'program' codigo 'end' ';'
+	retina: 'program' Bloque 'end' ';'
+		  | Funciones 'program' Bloque 'end' ';'
 		  ;
 
 	Funciones: 'func' 'variable' '(' ')' 'begin' Bloque 'end' ';'
@@ -104,10 +104,17 @@ rule
 			| 'tipo' 'variable' '=' Exp ';'
 			| 'repeat' 'numero' 'times' Bloque 'end' ';'
 			| 'repeat' 'variable' 'times' Bloque 'end' ';'
-			| func
-			| llamadas a funciones con y sin atributos
-			| WITH
+			| FReservada '(' Arg ')';
+			| FReservada '(' ')';
+			| 'variable' '(' Arg ')';
+			| 'variable' '(' ')';
+			| Exp;
+			| 'with' Declaracion 'do' Bloque 'end' ';'
 			;
+
+	Declaracion : Tipo 'variable';
+				| Tipo 'variable'; Declaracion
+				;
 
 	Tipo: 'number'
 		| 'boolean'
