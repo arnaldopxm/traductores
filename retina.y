@@ -129,22 +129,21 @@ rule
 		| 'true'
 		| 'false'
 		| 'variable'
-		| '-' Exp = UMENOS
-		| Exp '+' Exp
-		| Exp '-' Exp
-		| Exp '/' Exp
-		| Exp '*' Exp
-		| Exp 'mod' Exp
-		| Exp 'div' Exp
-		| Exp '>' Exp
-		| Exp '<' Exp
-		| Exp '>=' Exp
-		| Exp '<=' Exp
-		| Exp 'and' Exp
-		| Exp 'or' Exp
-		| Exp '==' Exp
-		| Exp '\=' Exp
-		| 'not' Exp
-		| Exp '+' Exp
+		| '-' Exp = UMENOS 		{ result = UnaryMenos.new(val[1])}
+		| Exp '+' Exp 			{ result = OpSuma.new(val[0],val[2])}
+		| Exp '-' Exp 			{ result = OpResto.new(val[0],val[2])}
+		| Exp '/' Exp 			{ result = OpDivision.new(val[0],val[2])}
+		| Exp '*' Exp 			{ result = OpMultiplicacion.new(val[0],val[2])}
+		| Exp 'mod' Exp 		{ result = OpMod.new(val[0],val[2])}
+		| Exp 'div' Exp 		{ result = OpDiv.new(val[0],val[2])}
+		| Exp '>' Exp 			{ result = OpMayor.new(val[0],val[2])}
+		| Exp '<' Exp		    { result = OpMenor.new(val[0],val[2])}
+		| Exp '>=' Exp 			{ result = OpMayorIgual.new(val[0],val[2])}
+		| Exp '<=' Exp 			{ result = OpMenorIgual.new(val[0],val[2])}
+		| Exp 'and' Exp 		{ result = OpAsignacion.new(val[0],val[2])}
+		| Exp 'or' Exp			{ result = OpOr.new(val[0],val[2])}
+		| Exp '==' Exp 			{ result = OpIgual.new(val[0],val[2])}
+		| Exp '\=' Exp 			{ result = OpDistinto.new(val[0],val[2])}
+		| 'not' Exp 			{ result = UnaryNot.new(val[1])}
 		;
 
