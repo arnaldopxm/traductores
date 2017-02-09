@@ -99,7 +99,6 @@ rule
 			| 'if' Exp 'then' Bloque 'else' Bloque 'end' ';'
 			| 'while' Exp 'do' Bloque 'end' ';'
 			| 'for' 'variable' 'from' 'numero' 'to' 'numero' 'do' Bloque 'end' ';'
-			| Exp '=' Exp;
 			| 'tipo' 'variable' ';'
 			| 'tipo' 'variable' '=' Exp ';'
 			| 'repeat' 'numero' 'times' Bloque 'end' ';'
@@ -140,10 +139,11 @@ rule
 		| Exp '<' Exp		    { result = OpMenor.new(val[0],val[2])}
 		| Exp '>=' Exp 			{ result = OpMayorIgual.new(val[0],val[2])}
 		| Exp '<=' Exp 			{ result = OpMenorIgual.new(val[0],val[2])}
-		| Exp 'and' Exp 		{ result = OpAsignacion.new(val[0],val[2])}
+		| Exp 'and' Exp 		{ result = OpAnd.new(val[0],val[2])}
 		| Exp 'or' Exp			{ result = OpOr.new(val[0],val[2])}
 		| Exp '==' Exp 			{ result = OpIgual.new(val[0],val[2])}
 		| Exp '\=' Exp 			{ result = OpDistinto.new(val[0],val[2])}
 		| 'not' Exp 			{ result = UnaryNot.new(val[1])}
+		|  Exp '=' Exp;					{ result = OpAsignacion.new(val[0],val[2])}
 		;
 
