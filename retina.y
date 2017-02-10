@@ -70,7 +70,7 @@ class Parser
 
 end
 
-start Logica
+start Declaracion
 
 rule
 /*
@@ -110,14 +110,11 @@ rule
 			| WITH
 			;
 
-	Tipo: 'number'
-		| 'boolean'
-		;
-
 	Arg: Tipo 'variable'
 	   | Tipo 'variable' ',' Arg
 	   ;
 */
+
 	Aritmetica : '(' Aritmetica ')' {val[1]}
 		| Variables { result = val[0]}
 		| 'numero' {result = Num.new(val[0])}
@@ -153,6 +150,16 @@ rule
 	TipoDeDato: 'number' {result = TipoDato_.new(val[0])}
 	  | 'boolean' {result = TipoDato_.new(val[0])}
 		;
+
+	Declaracion: TipoDeDato Variables {result = OpDeclaracion.new(val[0],val[1])}
+		|TipoDeDato Asignacion {result = OpDeclaracion.new(val[0],val[1])}
+		;
+
+	Asignacion: Variables '=' Logica {result = OpAsignacion.new(val[0],val[2])}
+		| Variables '=' Aritmetica {result = OpAsignacion.new(val[0],val[2])}
+		;
+
+	Funciones:
 
 
 

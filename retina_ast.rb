@@ -74,15 +74,6 @@ class Bloque < AST
 	attr_accessor :Declaracion, :Instruccion
 end
 
-class Declaracion < AST
-	attr_accessor :tipo, :variable
-  def initialize t, v
-      @tipo = t.digit
-      @variable = v.digit
-  end
-
-end
-
 class TipoDato_ < AST
   attr_accessor :digit
 
@@ -115,8 +106,5 @@ class OpMayorIgual < BinaryOP;end
 class OpMenorIgual < BinaryOP;end
 class OpAnd < BinaryOP; end
 class OpOr < BinaryOP; end
-=begin
-class OpAsignacion < BinaryOp; end
-
-
-=end
+class OpDeclaracion < BinaryOP; end
+class OpAsignacion < BinaryOP; end
