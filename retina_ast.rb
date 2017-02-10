@@ -58,6 +58,16 @@ class BinaryOP < AST
     end
 end
 
+class ThreeOP < AST
+    attr_accessor :left, :right, :c
+
+    def initialize lh, rh, c
+        @left = lh
+        @right = rh
+        @c = c
+    end
+end
+
 class Identificado < AST
   attr_accessor :digit
 
@@ -88,7 +98,8 @@ end
 
 class Number_ < TipoDato_; end
 class Boolean_ < TipoDato_; end
-
+class LlamadaFuncion < UnaryOP; end
+class FuncionArg < BinaryOP; end
 class UnaryMenos < UnaryOP;end
 class UnaryNot < UnaryOP; end
 class OpSuma < BinaryOP;end
@@ -108,3 +119,5 @@ class OpAnd < BinaryOP; end
 class OpOr < BinaryOP; end
 class OpDeclaracion < BinaryOP; end
 class OpAsignacion < BinaryOP; end
+class Palabra < TipoDato_; end
+class Argumento < UnaryOP; end

@@ -3,8 +3,8 @@ class Parser
 	token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'Strings' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' UMENOS
 
 	prechigh
-			right UMINUS
-			left Por Entre Porcentaje Div Mod
+			right UMINUS ','
+			left Por Entre Porcentaje Div Mod Coma
 			left Mas Menos
 	preclow
 
@@ -58,7 +58,7 @@ class Parser
 		'by' 'By'
 		'is' 'Is'
 		'home' 'Home'
-		'openeeye' 'OpenEye'
+		'openeye' 'OpenEye'
 		'closeeye' 'CloseEye'
 		'forward' 'Forward'
 		'backward' 'Backward'
@@ -70,7 +70,7 @@ class Parser
 
 end
 
-start Declaracion
+start LLamadaFunciones
 
 rule
 /*
@@ -159,9 +159,43 @@ rule
 		| Variables '=' Aritmetica {result = OpAsignacion.new(val[0],val[2])}
 		;
 
-	Funciones:
+	FuncionesSinArg: 'home' {result = Palabra.new(val[0])}
+		| 'openeye' {result = Palabra.new(val[0])}
+		| 'closeeye' {result = Palabra.new(val[0])}
+		;
 
+	FuncionesUnArg: 'forward' {result = Palabra.new(val[0])}
+		|	'backward' {result = Palabra.new(val[0])}
+		| 'rotatel' {result = Palabra.new(val[0])}
+		| 'rotater' {result = Palabra.new(val[0])}
+		;
 
+	FuncionesDosArgs: 'setposition' {result = Palabra.new(val[0])}
+		| 'arc' {result = Palabra.new(val[0])}
+		;
+
+	LLamadaFunciones: Variables '(' ')' {result = LlamadaFuncion.new(val[0])}
+		| FuncionesSinArg '(' ')' {result = LlamadaFuncion.new(val[0])}
+		| FuncionesUnArg '(' Arg ')' {result = FuncionArg.new(val[0],val[2])}
+		| FuncionesDosArgs '(' Arg ',' Arg ')' {result = ThreeOP.new(val[0],val[2],val[4])}
+		| Variables '(' Arg ')' {result = FuncionArg.new(val[0],val[2])}
+		| Variables '(' Args ')' {result = FuncionArg.new(val[0],val[2])}
+		;
+
+	Arg: Variables {result = Argumento.new(val[0])}
+		| Logica {result = Argumento.new(val[0])}
+		| Aritmetica {result = Argumento.new(val[0])}
+
+	Args: Arg {result = val[0]}
+		| Arg ',' Args {result = BinaryOP.new(val[0],val[2])}
+
+	#PalabraFunc: 'func' {result = Palabra.new(val[0])};
+
+	Instrucciones: LLamadaFunciones ';' {result = val[0]}
+		| Asignacion ';' {result = val[0]}
+		| Aritmetica ';' {result = val[0]}
+		| Logica ';' {result = val[0]}
+		| Instrucciones
 
 
 
