@@ -44,6 +44,7 @@ $diccionario = {
   End: /\Aend\b/,
   While: /\Awhile\b/,
   Do: /\Ado\b/,
+  With: /\Awith\b/,
   Repeat: /\Arepeat\b/,
   Times: /\Atimes\b/,
   Func: /\Afunc\b/,

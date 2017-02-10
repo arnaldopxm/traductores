@@ -1,6 +1,6 @@
 class Parser
 
-	token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'Strings' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' UMENOS
+	token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'string' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' 'with' UMENOS
 
 	prechigh
 			right UMINUS ','
@@ -30,7 +30,7 @@ class Parser
 		'->' 'Flecha'
 		','  'Coma'
 		'numero' 'Numero'
-		'strings' 'Strings'
+		'string' 'Strings'
 		'-' 'Menos'
 		'*' 'Por'
 		'/' 'Entre'
@@ -67,57 +67,17 @@ class Parser
 		'setposition' 'SetPosition'
 		'arc' 'Arc'
 		'variable' 'Variables'
+		'with' 'With'
 
 end
 
-start LLamadaFunciones
+start Retina
 
 rule
-/*
-	Retina: 'program' codigo 'end' ';'
-		  | Funciones 'program' codigo 'end' ';'
-		  ;
-
-	Funciones: 'func' 'variable' '(' ')' 'begin' Bloque 'end' ';'
-			| 'func' 'variable' '(' Arg ')' 'begin' Bloque 'end' ';'
-			| 'func' 'variable' '(' ')' '->' Tipo 'begin' Bloque 'return' Aritmetica ';' 'end' ';'
-			| 'func' 'variable' '(' Arg ')' '->' Tipo 'begin' Bloque 'return' Aritmetica 'end' ';'
-			| Funciones Funciones
-			;
-
-	FReservadas : 'home'
-				| 'openeye'
-				| 'closeeye'
-				| 'forward'
-				| 'backward'
-				| 'rotatel'
-				| 'rotater'
-				| 'setposition'
-				| 'arc'
-				;
-
-	Bloque  : 'if' Aritmetica 'then' Bloque 'end' ';'
-			| 'if' Aritmetica 'then' Bloque 'else' Bloque 'end' ';'
-			| 'while' Aritmetica 'do' Bloque 'end' ';'
-			| 'for' 'variable' 'from' 'numero' 'to' 'numero' 'do' Bloque 'end' ';'
-			| Aritmetica '=' Aritmetica;
-			| 'tipo' 'variable' ';'
-			| 'tipo' 'variable' '=' Aritmetica ';'
-			| 'repeat' 'numero' 'times' Bloque 'end' ';'
-			| 'repeat' 'variable' 'times' Bloque 'end' ';'
-			| func
-			| llamadas a funciones con y sin atributos
-			| WITH
-			;
-
-	Arg: Tipo 'variable'
-	   | Tipo 'variable' ',' Arg
-	   ;
-*/
 
 	Aritmetica : '(' Aritmetica ')' {val[1]}
 		| Variables { result = val[0]}
-		| 'numero' {result = Num.new(val[0])}
+		| Numero {result = val[0]}
 		| '-' Aritmetica = UMENOS {result = UnaryMenos.new(val[1])}
 		| Aritmetica '+' Aritmetica {result = OpSuma.new(val[0],val[2])}
 		| Aritmetica '-' Aritmetica {result = OpResta.new(val[0],val[2])}
@@ -147,12 +107,17 @@ rule
 		| 'variable' {result = Identificado.new(val[0])}
 		;
 
+		#no esta imprimiendo bien el nombre
 	TipoDeDato: 'number' {result = TipoDato_.new(val[0])}
 	  | 'boolean' {result = TipoDato_.new(val[0])}
 		;
 
 	Declaracion: TipoDeDato Variables {result = OpDeclaracion.new(val[0],val[1])}
 		|TipoDeDato Asignacion {result = OpDeclaracion.new(val[0],val[1])}
+		;
+
+	Declaraciones: Declaracion ';' {result = val[0]}
+		| Declaracion ';' Declaraciones {result = BinaryOP.new(val[0],val[2])}
 		;
 
 	Asignacion: Variables '=' Logica {result = OpAsignacion.new(val[0],val[2])}
@@ -189,15 +154,80 @@ rule
 	Args: Arg {result = val[0]}
 		| Arg ',' Args {result = BinaryOP.new(val[0],val[2])}
 
-	#PalabraFunc: 'func' {result = Palabra.new(val[0])};
+	PalabraFunc: 'func' {result = Palabra.new(val[0])};
 
 	Instrucciones: LLamadaFunciones ';' {result = val[0]}
 		| Asignacion ';' {result = val[0]}
 		| Aritmetica ';' {result = val[0]}
 		| Logica ';' {result = val[0]}
-		| Instrucciones
+		| BloqueW ';' {result = val[0]}
+		| BloqueDo ';' {result = val[0]}
+		| Entrada ';' {result = val[0]}
+		| Salida ';' {result = val[0]}
+		| Instrucciones Instrucciones {result = Instruccion_.new(val[0],val[1])}
 
+	Argumento: Declaracion {result = val[0]}
+		| Declaracion ',' Argumento {result = BinaryOP.new(val[0],val[2])}
+		;
 
+	Return: 'return' Aritmetica ';' {result = Return_.new(val[1])}
+		| 'return' LLamadaFunciones ';' {result = Return_.new(val[1])}
+		| 'return' Logica ';' {result = Return_.new(val[1])}
+		;
+
+	DeclaracionFunciones: PalabraFunc Variables '(' Argumento ')' 'begin' Instrucciones 'end' ';' {result = Funcion_.new(val[0],val[1],val[3],val[6])}
+		| PalabraFunc Variables '(' ')' 'begin' Instrucciones 'end' ';' {result = Funcion_.new(val[0,val[1],nil,val[5]])}
+		| PalabraFunc Variables '(' Argumento ')' '->' TipoDeDato 'begin' Instrucciones Return 'end' ';' {result = Funcion_R.new(val[0],val[1],val[3],val[6],val[8],val[9])}
+		| PalabraFunc Variables '(' ')' '->' TipoDeDato 'begin' Instrucciones Return 'end' ';' {result = Funcion_R.new(val[0],val[1],nil,val[5],val[7],val[8])}
+		;
+
+	BloqueDo: 'do' Instrucciones 'end' {result = Bloque.new(val[1],nil)}
+		|
+		;
+
+	Numero: 'numero' {result = Num.new(val[0])}
+		|
+		;
+
+	BloqueW: 'with' Declaraciones BloqueDo {result = Bloque.new(val[1],val[2])}
+		| 'if' Logica 'then' Instrucciones 'end' {result = Condicional.new(val[1],val[3],nil)}
+		| 'if' Logica 'then' Instrucciones 'else' Instrucciones 'end' {result = Bloque.new(val[1],val[3],val[5])}
+		| 'while' Logica BloqueDo {result = Bloque.new(val[1],val[3])}
+		| 'for' Variables 'from' Numero 'to' Numero BloqueDo {result = Iteracion.new(val[1],val[3],val[5],val[6])}
+		| 'repeat' Numero 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
+		| 'repeat' Variables 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
+		;
+
+	Entrada: 'read' Variables {result = Entrada.new(val[1])}
+		|
+		;
+
+	CadenaCarac: 'string' {result = String_.new(val[0])}
+		|
+		;
+
+	ElemSalida: CadenaCarac {result = val[0]}
+		| Logica {result = val[0]}
+		| Aritmetica {result = val[0]}
+		| LLamadaFunciones {result = val[0]}
+		;
+
+	BloqSalida: ElemSalida {result = Salida_.new(val[0],nil)}
+		| ElemSalida ',' BloqSalida {result = Salida_.new(val[0],val[2])}
+		;
+
+	Salida: 'write' BloqSalida {result = val[1]}
+		| 'writeln' BloqSalida {result = val[1]}
+		;
+
+	Program: 'program' Instrucciones 'end' ';' {result = Programa.new(val[1])}
+		|
+		;
+
+	Retina:  DeclaracionFunciones Program {result = FinalRetina.new(val[0],val[1])}
+		| DeclaracionFunciones {result = FinalRetina.new(val[0],nil)}
+		| Program {result = FinalRetina.new(val[0],nil)}
+		;
 
 
 ---- header
@@ -218,7 +248,7 @@ end
 ---- inner
 begin
 def on_error(id, token, stack)
-    #raise SyntacticError::new(token)
+    raise SyntacticError::new(token)
 end
 
 def next_token

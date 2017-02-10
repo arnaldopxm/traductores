@@ -80,10 +80,6 @@ class Identificado < AST
   end
 end
 
-class Bloque < AST
-	attr_accessor :Declaracion, :Instruccion
-end
-
 class TipoDato_ < AST
   attr_accessor :digit
 
@@ -91,10 +87,36 @@ class TipoDato_ < AST
       @digit = d.token
   end
 
-  def print_ast indent=""
-      puts "#{indent}#{self.class}: #{@digit}"
-  end
 end
+
+class Funcion_ < AST
+  attr_accessor :funcion, :args, :inst, :w
+
+  def initialize f, a, i, w
+      @funcion = f
+      @args = a
+      @inst = i
+      @w = w
+
+  end
+
+end
+
+class Funcion_R < AST
+  attr_accessor :funcion, :var, :arg, :td, :ret, :ins
+
+  def initialize f, v, a, i, r, w
+      @funcion = f
+      @var = v
+      @arg = a
+      @td = i
+      @ret = r
+      @ins = w
+
+  end
+
+end
+
 
 class Number_ < TipoDato_; end
 class Boolean_ < TipoDato_; end
@@ -121,3 +143,14 @@ class OpDeclaracion < BinaryOP; end
 class OpAsignacion < BinaryOP; end
 class Palabra < TipoDato_; end
 class Argumento < UnaryOP; end
+class Instruccion_ < BinaryOP; end
+class Return_ < UnaryOP; end
+class Bloque < BinaryOP; end
+class Condicional < ThreeOP; end
+class BloqFrom < BinaryOP;end
+class Iteracion < Funcion_; end
+class Entrada < UnaryOP; end
+class String_<UnaryOP; end
+class Salida_ <BinaryOP; end
+class Programa < UnaryOP; end
+class FinalRetina < BinaryOP; end

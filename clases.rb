@@ -127,6 +127,7 @@ class Then < PalabraReserv; end
 class End < PalabraReserv; end
 class While < PalabraReserv; end
 class Do < PalabraReserv; end
+class With < PalabraReserv; end
 class Repeat < PalabraReserv; end
 class Times < PalabraReserv; end
 class Func < PalabraReserv; end
