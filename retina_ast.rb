@@ -472,7 +472,7 @@ end
 
 class BloqFrom < BinaryOP
 
-def print_ast indent=""
+  def print_ast indent=""
       puts "#{indent} Bloque From: "
 
       attrs.each do |a|
@@ -482,6 +482,24 @@ def print_ast indent=""
 end
 
 class Iteracion < Funcion_; end
+
+class IteracionBy < AST
+  attr_accessor :funcion, :var, :arg, :td, :ret,:ins
+
+  def initialize f, v, a, i, r,b, w
+      @funcion = f
+      @var = v
+      @arg = a
+      @td = i
+      @ret = r
+      @ins = w
+
+  end
+
+end
+
+
+
 class Entrada < UnaryOP
   def print_ast indent=""
       puts "#{indent} Entrada "
@@ -504,6 +522,22 @@ class Programa < UnaryOP
   end
 end
 
+class Incremento < AST
+  attr_accessor :arit
+    def initialize arit
+      @arit=arit
+    end
+    
+    def print_ast indent=""
+      puts "#{indent} Incremento En :"
+
+      attrs.each do |a|
+          a.print_ast indent + "  " if a.respond_to? :print_ast
+      end
+  end
+end
+
+
 class FinalRetina < BinaryOP
 
   def print_ast indent=""
@@ -513,5 +547,4 @@ class FinalRetina < BinaryOP
           a.print_ast indent + "  " if a.respond_to? :print_ast
       end
   end
-
 end

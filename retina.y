@@ -147,12 +147,14 @@ rule
 		| Variables '(' Args ')' {result = FuncionArg.new(val[0],val[2],nil)}
 		;
 
-	Arg: Variables {result = Argumento.new(val[0])}
+	Arg: 
 		| Logica {result = Argumento.new(val[0])}
 		| Aritmetica {result = Argumento.new(val[0])}
+		;
 
 	Args: Arg {result = val[0]}
-		| Arg ',' Args {result = BinaryOP.new(val[0],val[2])}
+		| Args ',' Arg{result = BinaryOP.new(val[0],val[2])}
+		;
 
 	PalabraFunc: 'func' {result = Palabra.new(val[0])};
 
@@ -165,6 +167,7 @@ rule
 		| Entrada ';' {result = val[0]}
 		| Salida ';' {result = val[0]}
 		| Instrucciones Instrucciones {result = Instruccion_.new(val[0],val[1])}
+		;
 
 	Argumento: Declaracion {result = val[0]}
 		| Declaracion ',' Argumento {result = BinaryOP.new(val[0],val[2])}
@@ -182,11 +185,9 @@ rule
 		;
 
 	BloqueDo: 'do' Instrucciones 'end' {result = Bloque.new(val[1],nil)}
-		|
 		;
 
 	Numero: 'numero' {result = Num.new(val[0])}
-		|
 		;
 
 	BloqueW: 'with' Declaraciones BloqueDo {result = Bloque.new(val[1],val[2])}
@@ -194,16 +195,18 @@ rule
 		| 'if' Logica 'then' Instrucciones 'else' Instrucciones 'end' {result = Bloque.new(val[1],val[3],val[5])}
 		| 'while' Logica BloqueDo {result = Bloque.new(val[1],val[3])}
 		| 'for' Variables 'from' Numero 'to' Numero BloqueDo {result = Iteracion.new(val[1],val[3],val[5],val[6])}
+		| 'for' Variables 'from' Numero 'to' Numero Incremento BloqueDo {result= IteracionBy.new(val[1],val[3],val[5],val[8])}
 		| 'repeat' Numero 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
 		| 'repeat' Variables 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
 		;
 
+	Incremento: 'by' Aritmetica {result= Incremento.new(val[1])}
+		;
+
 	Entrada: 'read' Variables {result = Entrada.new(val[1])}
-		|
 		;
 
 	CadenaCarac: 'string' {result = String_.new(val[0])}
-		|
 		;
 
 	ElemSalida: CadenaCarac {result = val[0]}
