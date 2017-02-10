@@ -484,16 +484,23 @@ end
 class Iteracion < Funcion_; end
 
 class IteracionBy < AST
-  attr_accessor :funcion, :var, :arg, :td, :ret,:ins
+  attr_accessor :funcion, :var, :arg, :td, :ins
 
-  def initialize f, v, a, i, r,b, w
+  def initialize f, v, a, i, w
       @funcion = f
       @var = v
       @arg = a
       @td = i
-      @ret = r
       @ins = w
 
+  end
+
+    def print_ast indent=""
+      puts "#{indent} Iteracion: "
+
+      attrs.each do |a|
+          a.print_ast indent + "  " if a.respond_to? :print_ast
+      end
   end
 
 end
@@ -529,8 +536,7 @@ class Incremento < AST
     end
     
     def print_ast indent=""
-      puts "#{indent} Incremento En :"
-
+      puts "#{indent} Incremento En : #{@arit}"
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
       end
