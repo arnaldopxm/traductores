@@ -40,6 +40,7 @@ $diccionario = {
   Write: /\Awrite\b/,
   Writeln: /\Awriteln\b/,
   If: /\Aif\b/,
+  Else: /\Aelse\b/,
   Then: /\Athen\b/,
   End: /\Aend\b/,
   While: /\Awhile\b/,

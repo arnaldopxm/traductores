@@ -123,6 +123,7 @@ class Read < PalabraReserv; end
 class Write < PalabraReserv; end
 class Writeln < PalabraReserv; end
 class If < PalabraReserv; end
+class Else < PalabraReserv; end
 class Then < PalabraReserv; end
 class End < PalabraReserv; end
 class While < PalabraReserv; end
