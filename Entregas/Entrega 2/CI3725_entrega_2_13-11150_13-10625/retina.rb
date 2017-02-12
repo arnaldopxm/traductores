@@ -1,135 +1,76 @@
 =begin
-<<<<<<< HEAD
-	corrida: lexer.rb <archivo.rtn>
-	Analizador Lexicografico para el idioma retina
-Autores
-	-Arnaldo Quintero 13-11150
-	-Gabriel Gutierrez 13-10625
-
-Ultima modificacion: 25/01/2017
-=end
-
-require_relative 'retina'
-=======
 	Funciones y clases para el analizador lexicografico lexer.rb
 Autores
 	-Arnaldo Quintero 13-11150
 	-Gabriel Gutierrez 13-10625
->>>>>>> work-branch
 
 Ultima modificacion: 25/01/2017
 =end
-
-class Token
-  attr_reader :token, :lin, :col
-
-  def initialize text, lin, col
-    @token = text
-    @lin = lin
-    @col = col
-  end
-end
-
-class Booleano < Token
-  #true y false,
-  def to_s
-    "line #{lin}, columna #{col}: literal booleano '#{token}'"
-  end
-end
-
-class Numero < Token
-  #/\d*\.*\d+/
-  def to_s
-    "line #{lin}, columna #{col}: literal numerico '#{token}'"
-  end
-end
-
-class OpLogico < Token
-  #and, or, not
-  def to_s
-    "line #{lin}, columna #{col}: operador logico '#{token}'"
-  end
-end
-
-class OpComparacion < Token
-  #==, /=, >=, <=, >, <
-  def to_s
-    "line #{lin}, columna #{col}: operador de comparacion '#{token}'"
-  end
-end
-
-class OpAritmetico < Token
-  #-, *, /, %, div, mod, +
-  def to_s
-    "line #{lin}, columna #{col}: operador aritmetico '#{token}'"
-  end
-end
-
-class PalabraReserv < Token
-  #program, read, write, writeln, if, then, end, while, do
-  #repeat, times, func, begin, return, for, from, to, by, is
-  def to_s
-    "line #{lin}, columna #{col}: palabra reservada '#{token}'"
-  end
-end
-
-class TipoDato < Token
-  # number, boolean
-  def to_s
-    "line #{lin}, columna #{col}: tipo de dato '#{token}'"
-  end
-end
-
-class Identificador < Token
-  # home, openeye, closeeye, forward, backward, rotatel,
-  # rotater, setposition, arc
-  # [a-z]\w*
-  def to_s
-    "line #{lin}, columna #{col}: identificador '#{token}'"
-  end
-end
-
-class Signo < Token
-  # ",;,=,\,->,(,)
-  def to_s
-    "line #{lin}, columna #{col}: signo '#{token}'"
-  end
-end
-
-class Strings < Token
-  def to_s
-    "line #{lin}, columna #{col}: string '#{token}'"
-  end
-end
-
-class CaractInesperado < RuntimeError
-  #{,},:
-  def initialize carac, lin, col
-    @carac = carac
-    @lin = lin
-    @col = col
-  end
-
-  def to_s
-    "linea #{@lin}, columna #{@col}: caracter inesperado '#{@carac}'"
-  end
-end
-
+require_relative 'clases.rb'
 
 $diccionario = {
-  Booleano: /\A(true|false)\b/,
+  True: /\Atrue\b/,
+  False: /\Afalse\b/,
   Numero: /\A\d+(\.\d+)*\b/,
-  OpLogico: /\A(and|or|not)\b/,
-  OpComparacion: /\A(==|\/=|>=|<=|>|<)/,
-  Signo: /\A(;|=|\\|\(|\)|->|,)/,
-  OpAritmetico: /(\A(-|\*|\/|%|\+))|(\A(div|mod)\b)/,
-  PalabraReserv: /\A(program|read|write|writeln|if|then|end|while|do|repeat|times|func|begin|return|for|from|to|by|is)\b/,
-  TipoDato: /\A(number|boolean)\b/,
-  Identificador: /\A(home|openeye|closeeye|forward|backward|rotatel|rotater|setposition|arc|[a-z]\w*)\b/,
+  And: /\Aand\b/,
+  Or: /\Aor\b/,
+  Not: /\Anot\b/,
+  Igual: /\A==/,
+  Distinto: /\A\/=/,
+  MayorIgual: /\A>=/,
+  MenorIgual: /\A<=/,
+  Mayor: /\A>/,
+  Menor: /\A</,
+  Separador: /\A;/,
+  Asignacion: /\A=/,
+  BackSlash: /\A\\/,
+  ParentesisA: /\A\(/,
+  ParentesisC: /\A\)/,
+  Flecha: /\A->/,
+  Coma: /\A,/,
+  Menos: /\A-/,
+  Por: /\A\*/,
+  Entre: /\A\//,
+  Porcentaje: /\A\%/,
+  Mas: /\A\+/,
+  Div: /\Adiv\b/,
+  Mod: /\Amod\b/,
+  Program: /\Aprogram\b/,
+  Read: /\Aread\b/,
+  Write: /\Awrite\b/,
+  Writeln: /\Awriteln\b/,
+  If: /\Aif\b/,
+  Else: /\Aelse\b/,
+  Then: /\Athen\b/,
+  End: /\Aend\b/,
+  While: /\Awhile\b/,
+  Do: /\Ado\b/,
+  With: /\Awith\b/,
+  Repeat: /\Arepeat\b/,
+  Times: /\Atimes\b/,
+  Func: /\Afunc\b/,
+  Begin: /\Abegin\b/,
+  Return: /\Areturn\b/,
+  For: /\Afor\b/,
+  From: /\Afrom\b/,
+  To: /\Ato\b/,
+  By: /\Aby\b/,
+  Is: /\Ais\b/,
+  Number: /\Anumber\b/,
+  Boolean: /\Aboolean\b/,
+  Home: /\Ahome\b/,
+  OpenEye: /\Aopeneye\b/,
+  CloseEye: /\Acloseeye\b/,
+  Forward: /\Aforward\b/,
+  Backward: /\Abackward\b/,
+  RotateL: /\Arotatel\b/,
+  RotateR: /\Arotater\b/,
+  SetPosition: /\Asetposition\b/,
+  Arc: /\Aarc\b/,
+  Variables: /\A[a-z]\w*\b/,
   Strings: /\A("(.|\s)*[^\\,\n]?")|\A"[^"]*\n/
 }
-
-
+2
 class Lexer
   attr_reader :file, :tokens, :errors
 
@@ -265,5 +206,8 @@ end
         end
       end
     end
+
+    return @tokens
+
   end
 end

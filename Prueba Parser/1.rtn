@@ -1,0 +1,35 @@
+func asd(number x,boolean y) -> number
+begin
+  if true then
+    return x;
+  else
+    return y;
+  end;
+end;
+
+func asb(number x,boolean y)
+begin
+  x = x+5;
+end;
+
+program
+  with
+      number i;
+      boolean j=true;
+      number k=10;
+  do
+      i = 27;
+      writeln i + 13;
+      forward(100);
+      for x from y to z by 10/x do
+        x = x+5;
+        home();
+      end;
+  end;
+
+  while true and false do
+    home();
+    x/=y;
+  end;
+
+end;

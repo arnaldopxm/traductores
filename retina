@@ -8,7 +8,6 @@ Autores
 Ultima modificacion: 25/01/2017
 =end
 
-#require_relative 'retina.rb'
 require_relative 'retina_parser.rb'
 
 def main
@@ -25,23 +24,26 @@ def main
     return
   end
 
-  #crear lexer
+  #crear lexer, parser
   lexer = Lexer.new(file)
   parser = Parser.new
 
   #leer tokens
   lexer.leerPorLinea
 
+  #parsear input
   ast = parser.parse lexer.tokens
-  ast.print_ast
 
-  #imprimir tokens
-=begin
+  #imprimir AST
   if !lexer.errors.empty?
     puts lexer.errors
   else
-    puts lexer.tokens
-=end
+    if !parser.errors.empty?
+      puts parser.errors
+    else
+      ast.print_ast
+    end
+  end
 
   return
 end
