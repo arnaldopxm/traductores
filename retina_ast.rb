@@ -195,7 +195,7 @@ class Declaracion_ < AST
       puts "#{indent + '  '}tipo:"
       @tipo.print_ast indent + '    '
       puts "#{indent + '  '}identificadores:"
-      @indent.print_ast indent + '    '
+      @ident.print_ast indent + '    '
   end
 end
 
@@ -228,7 +228,7 @@ class LlamadaFunciones_ < AST
       puts "#{indent + '  '}identificador:"
       @name.print_ast indent + '    '
       puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
-      @args.print_ast indent + '    ' if @arg1.respond_to? :print_ast
+      @args.print_ast indent + '    ' if @args.respond_to? :print_ast
   end
 end
 
@@ -310,11 +310,11 @@ class Condicional < AST
   def print_ast indent=""
       puts "#{indent} Condicional:"
       puts "#{indent + '  '}if:"
-      @cond0.print_ast indent + '      '
+      @cond0.print_ast indent + '  '
       puts "#{indent + '  '}else:" if @cond1.respond_to? :print_ast
-      @cond1.print_ast indent + '      ' if @cond1.respond_to? :print_ast
+      @cond1.print_ast indent + '  ' if @cond1.respond_to? :print_ast
       puts "#{indent + '  '}instrucciones:"
-      @bloq.print_ast indent + '      '
+      @bloq.print_ast indent + '  '
   end
 end
 
@@ -406,9 +406,9 @@ class Retina_ < AST
   end
 
   def print_ast indent=""
-      puts "declaraciones:"
+      puts "declaraciones:" if @dec.respond_to? :print_ast
       @dec.print_ast indent if @dec.respond_to? :print_ast
-      puts "instrucciones:"
+      puts "instrucciones:" if @inst.respond_to? :print_ast
       @inst.print_ast indent if @inst.respond_to? :print_ast
   end
 end

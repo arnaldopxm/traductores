@@ -142,7 +142,7 @@ rule
 
   LLamadaFunciones: Variable '(' ')' {result = LlamadaFunciones_.new(val[0],nil)}
     | Variable '(' Args ')'         {result = LlamadaFunciones_.new(val[0],val[2])}
-    | PalabrasReserv '(' ')'        {result = LlamanaFunciones_.new(val[0],nil)}
+    | PalabrasReserv '(' ')'        {result = LlamadaFunciones_.new(val[0],nil)}
     | PalabrasReserv '(' Args ')'   {result = LlamadaFunciones_.new(val[0],val[2])}
     ;
 
@@ -166,15 +166,15 @@ rule
     | 'writeln' BloqSalida          {result = Salida_S.new(val[1])}
     ;
 
-  Bloque: 'with' Declaraciones 'do' Instrucciones 'end' {result = Bloque.new(val[1],val[2])}
+  Bloque: 'with' Declaraciones 'do' Instrucciones 'end' {result = Bloque.new(val[1],val[3])}
     | 'with' 'do' Instrucciones 'end'                   {result = Bloque.new(nil,val[2])}
 
   Control:
     | 'if' Operaciones 'then' Instrucciones 'end'       {result = Condicional.new(val[1],nil,val[3])}
     | 'if' Operaciones 'then' Instrucciones 'else' Instrucciones 'end' {result = Condicional.new(val[1],val[3],val[5])}
-    | 'while' Operaciones 'do' Instrucciones 'end'      {result = IteracionIndeterminada.new(val[1],val[2])}
-    | 'for' Operador 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[6])}
-    | 'for' Operador 'from' Operaciones 'to' Operaciones 'by' Operador 'do' Instrucciones 'end' {result= IteracionDeterminada.new(val[1],val[3],val[5],val[6],val[7])}
+    | 'while' Operaciones 'do' Instrucciones 'end'      {result = IteracionIndeterminada.new(val[1],val[3])}
+    | 'for' Operador 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[7])}
+    | 'for' Operador 'from' Operaciones 'to' Operaciones 'by' Operaciones 'do' Instrucciones 'end' {result= IteracionDeterminada.new(val[1],val[3],val[5],val[7],val[9])}
     | 'repeat' Operaciones 'times' Instrucciones 'end'  {result = IteracionDeterminadaRepeat.new(nil,nil,val[1],nil,val[3])}
     ;
 
@@ -188,11 +188,14 @@ rule
     | Return                        {result = val[0]}
 
   Instrucciones: Instruccion ';'    {result = val[0]}
-    | Instruccion ';' Instrucciones {result = EnSerie.new(val[0],val[1])}
+    | Instruccion ';' Instrucciones {result = EnSerie.new(val[0],val[2])}
     ;
 
-  Argumento: Declaracion            {result = val[0]}
-    | Declaracion ',' Argumento     {result = EnSerie.new(val[0],val[2])}
+  Arg: TipoDeDato Variable {result = Declaracion_.new(val[0],val[1])}
+    ;
+
+  Argumento: Arg            {result = val[0]}
+    | Argumento ',' Arg     {result = EnSerie.new(val[0],val[2])}
     ;
 
   DeclaracionFuncion: 'func' Variable '(' Argumento ')' 'begin' Instrucciones 'end'  {result = Funcion_.new(val[1],val[3],nil,val[6])}
