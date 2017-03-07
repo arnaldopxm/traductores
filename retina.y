@@ -89,14 +89,14 @@ rule
 
   String: 'string' {result = String_.new(val[0])}
     ;
-   
+
   Operaciones: '(' Operaciones ')'        {result = val[1]}
-	|'numero'                			  {result = Numero_.new(val[0])}
-    | 'true'                        	  {result = True_.new(val[0])}
-    | 'false'                       	  {result = False_.new(val[0])}
-    | Variable                      	  {result = val[0]}
-    | '-' Operaciones = UMENOS         	  {result = UnaryMenos.new(val[1])}
-    | 'not' Operaciones                	  {result = UnaryNot.new(val[1])}
+    | 'numero'                             {result = Numero_.new(val[0])}
+    | 'true'                              {result = True_.new(val[0])}
+    | 'false'                             {result = False_.new(val[0])}
+    | Variable                            {result = val[0]}
+    | '-' Operaciones = UMENOS            {result = UnaryMenos.new(val[1])}
+    | 'not' Operaciones                   {result = UnaryNot.new(val[1])}
     | Operaciones '+' Operaciones         {result = OpSuma.new(val[0],val[2],'Suma:')}
     | Operaciones '-' Operaciones         {result = OpResta.new(val[0],val[2],'Resta:')}
     | Operaciones '/' Operaciones         {result = OpDivision.new(val[0],val[2],'Division:')}
