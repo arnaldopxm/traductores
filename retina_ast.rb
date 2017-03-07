@@ -1,3 +1,4 @@
+# Super Clase
 class AST
     def print_ast indent=""
         puts "#{indent}#{self.class}:"
@@ -14,6 +15,100 @@ class AST
     end
 end
 
+# Operadores En Serie
+class EnSerie < AST
+  attr_accessor :arg0, :arg1
+
+  def initialize arg0, arg1
+    @arg0 = arg0
+    @arg1 = arg1
+  end
+
+  def print_ast indent=""
+    attrs.each do |a|
+        a.print_ast indent if a.respond_to? :print_ast
+    end
+  end
+end
+
+# Estructuras de atributo unico
+class Singleton < AST
+    attr_accessor :operand
+
+    def initialize operand
+        @operand = operand
+    end
+
+    def print_ast indent=""
+        attrs.each do |a|
+        a.print_ast indent if a.respond_to? :print_ast
+        end
+    end
+end
+
+# Numeros
+class Numero_ < AST
+    attr_accessor :digit
+
+    def initialize d
+        @digit = d.token
+    end
+
+    def print_ast indent=""
+        puts "#{indent}Literal Numerico:"
+        puts "#{indent + '  '}valor: #{@digit}"
+    end
+end
+
+# Booleanos
+class Bools_ < AST
+    attr_accessor :digit
+
+    def initialize d
+        @digit = d.token
+    end
+
+    def print_ast indent=""
+        puts "#{indent}Literal Booleano:"
+        puts "#{indent + '  '}valor: #{@digit}"
+    end
+end
+
+class True_ < Bools_;end
+class False_ < Bools_;end
+
+# Variables
+class Variables_ < AST
+  attr_accessor :digit
+
+  def initialize d
+      @digit = d.token
+  end
+
+  def print_ast indent=""
+      puts "#{indent}Identificador:"
+      puts "#{indent+'  '}nombre: #{@digit}"
+  end
+end
+
+# Tipos de Datos
+class TipoDato_ < AST
+  attr_accessor :digit
+
+  def initialize d
+      @digit = d.token
+  end
+
+  def print_ast indent=""
+    puts "#{indent} Tipo:"
+    puts "#{indent + '  '}nombre: #{@digit}"
+  end
+end
+
+class Number_ < TipoDato_; end
+class Boolean_ < TipoDato_; end
+
+# Operadores Unarios
 class UnaryOP < AST
     attr_accessor :operand
 
@@ -28,126 +123,6 @@ class UnaryOP < AST
         end
     end
 end
-
-class Num < AST
-    attr_accessor :digit
-
-    def initialize d
-        @digit = d.token
-    end
-
-    def print_ast indent=""
-        puts "#{indent}Literal Numerico:"
-        puts "#{indent + '  '}valor: #{@digit}"
-    end
-end
-
-class Bools < AST
-    attr_accessor :digit
-
-    def initialize d
-        @digit = d.token
-    end
-
-    def print_ast indent=""
-        puts "#{indent}Literal Booleano:"
-        puts "#{indent + '  '}valor: #{@digit}"
-    end
-end
-
-class True_ < Bools;end
-class False_ < Bools;end
-
-class BinaryOP < AST
-    attr_accessor :left, :right
-
-    def initialize lh, rh, name
-        @left = lh
-        @right = rh
-        @name = name
-    end
-
-    def print_ast indent=""
-        puts "#{indent} #{@name}"
-        puts "#{indent+'  '}lado izquierdo:"
-        @left.print_ast indent + '    '
-        puts "#{indent+'  '}lado derecho:"
-        @right.print_ast indent + '    '
-    end
-end
-
-class Identificado < AST
-  attr_accessor :digit
-
-  def initialize d
-      @digit = d.token
-  end
-
-  def print_ast indent=""
-      puts "#{indent}Identificador:"
-      puts "#{indent+'  '}nombre: #{@digit}"
-  end
-end
-
-class TipoDato_ < AST
-  attr_accessor :digit
-
-  def initialize d
-      @digit = d.token
-  end
-
-  def print_ast indent=""
-    puts "#{indent} Tipo:"
-    puts "#{indent + '  '}nombre: #{@digit}"
-  end
-end
-
-class Funcion_ < AST
-  attr_accessor :funcion, :args, :inst, :ret
-
-  def initialize f, a, r, i
-      @funcion = f
-      @args = a
-      @ret = r
-      @inst = i
-  end
-
-  def print_ast indent=""
-      puts "#{indent} Declaracion de funcion:"
-      puts "#{indent + '  '}identificador:"
-      @funcion.print_ast indent + '    '
-      puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
-      @args.print_ast indent + '    ' if @args.respond_to? :print_ast
-      puts "#{indent + '  '}retorna:" if @ret.respond_to? :print_ast
-      @ret.print_ast indent + '    ' if @ret.respond_to? :print_ast
-      puts "#{indent + '  '}instrucciones:"
-      @inst.print_ast indent + '    '
-
-  end
-
-end
-
-class Funciones_ < AST
-  attr_accessor :name,:arg1, :arg2
-
-  def initialize name,arg1,arg2
-    @arg0=name
-    @arg1=arg1
-    @arg2=arg2
-  end
-
-  def print_ast indent=""
-      puts "#{indent} Llamada a funcion:"
-      puts "#{indent + '  '}identificador:" if @arg0.respond_to? :print_ast
-      @arg0.print_ast indent + '    ' if @arg0.respond_to? :print_ast
-      puts "#{indent + '  '}argumentos:" if @arg1.respond_to? :print_ast
-      @arg1.print_ast indent + '    ' if @arg1.respond_to? :print_ast
-      @arg2.print_ast indent + '    ' if @arg2.respond_to? :print_ast
-  end
-end
-
-class Number_ < TipoDato_; end
-class Boolean_ < TipoDato_; end
 
 class UnaryMenos < UnaryOP
   def print_ast indent=""
@@ -169,6 +144,25 @@ class UnaryNot < UnaryOP
   end
 end
 
+# Operadores Binarios
+class BinaryOP < AST
+    attr_accessor :left, :right
+
+    def initialize lh, rh, name
+        @left = lh
+        @right = rh
+        @name = name
+    end
+
+    def print_ast indent=""
+        puts "#{indent} #{@name}"
+        puts "#{indent+'  '}lado izquierdo:"
+        @left.print_ast indent + '    '
+        puts "#{indent+'  '}lado derecho:"
+        @right.print_ast indent + '    '
+    end
+end
+
 class OpSuma < BinaryOP;end
 class OpResta < BinaryOP;end
 class OpMultiplication < BinaryOP;end
@@ -184,66 +178,62 @@ class OpMayorIgual < BinaryOP;end
 class OpMenorIgual < BinaryOP;end
 class OpAnd < BinaryOP;end
 class OpOr < BinaryOP;end
-
-class EnSerie < AST
-  attr_accessor :arg0, :arg1
-
-  def initialize arg0, arg1
-    @arg0 = arg0
-    @arg1 = arg1
-  end
-
-  def print_ast indent=""
-    attrs.each do |a|
-        a.print_ast indent if a.respond_to? :print_ast
-    end
-  end
-end
-
-class OpDeclaracion < BinaryOP
-
-   def print_ast indent=""
-      puts "#{indent} Declaracion: #{@digit}"
-
-      puts "#{indent + '  '}tipo:"
-      @left.print_ast indent + '    '
-      puts "#{indent + '  '}identificadores:"
-      @right.print_ast indent + '    '
-  end
-end
-
 class OpAsignacion < BinaryOP;end
 
-class Palabra < TipoDato_
+# Declaraciones
+class Declaracion_ < AST
+
+  attr_accessor :tipo, :ident
+
+  def initialize t,i
+    @tipo = t
+    @ident = i
+  end
+
+   def print_ast indent=""
+      puts "#{indent} Declaracion:"
+      puts "#{indent + '  '}tipo:"
+      @tipo.print_ast indent + '    '
+      puts "#{indent + '  '}identificadores:"
+      @indent.print_ast indent + '    '
+  end
+end
+
+# Palabras Reservadas
+class Palabra_ < AST
+
+  attr_accessor :digit
+
+  def initialize d
+      @nombre = d.token
+  end
 
   def print_ast indent=""
       puts "#{indent} Palabra Reservada:"
-      puts "#{indent + '  '}nombre: #{@digit}"
+      puts "#{indent + '  '}nombre: #{@nombre}"
   end
 end
 
-class Argumento < UnaryOP
+# Funciones
+class LlamadaFunciones_ < AST
+  attr_accessor :name, :args
+
+  def initialize name,arg
+    @name=name
+    @args=arg
+  end
 
   def print_ast indent=""
-      puts "#{indent} Argumento: "
-
-      attrs.each do |a|
-          a.print_ast indent + "  " if a.respond_to? :print_ast
-      end
+      puts "#{indent} Llamada a funcion:"
+      puts "#{indent + '  '}identificador:"
+      @name.print_ast indent + '    '
+      puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
+      @args.print_ast indent + '    ' if @arg1.respond_to? :print_ast
   end
 end
 
-class Instruccion_ < BinaryOP
-      def print_ast indent=""
-      puts "#{indent} Instruccion: #{@digit}"
-
-      attrs.each do |a|
-          a.print_ast indent + "  " if a.respond_to? :print_ast
-      end
-  end
-end
-
-class Return_ < UnaryOP
+# Return
+class Return_ < Singleton
 
   def print_ast indent=""
       puts "#{indent} Return:"
@@ -255,6 +245,41 @@ class Return_ < UnaryOP
 
 end
 
+# Entrada
+class Entrada < Singleton
+
+  def print_ast indent=""
+      puts "#{indent} Entrada:"
+
+      attrs.each do |a|
+          a.print_ast indent + "  " if a.respond_to? :print_ast
+      end
+  end
+end
+
+# Salida
+class Salida_ < Singleton
+
+  def print_ast indent=""
+      puts "#{indent} Salida:"
+      puts "#{indent + '  '}expresiones:"
+      attrs.each do |a|
+          a.print_ast indent + "    " if a.respond_to? :print_ast
+      end
+  end
+end
+
+class Salida_S < UnaryOP
+  def print_ast indent=""
+      puts "#{indent} Salida con Salto:"
+      puts "#{indent + '  '}expresiones:"
+      attrs.each do |a|
+          a.print_ast indent + "    " if a.respond_to? :print_ast
+      end
+  end
+end
+
+# Bloques de instrucciones
 class Bloque < AST
   attr_accessor :dec, :ins
 
@@ -272,6 +297,7 @@ class Bloque < AST
   end
 end
 
+# Estructuras de Control
 class Condicional < AST
 
   attr_accessor :cond0, :cond1, :bloq
@@ -309,8 +335,6 @@ class IteracionIndeterminada < AST
   end
 end
 
-
-
 class IteracionDeterminada < AST
   attr_accessor :var, :desde, :hasta, :incremento ,:bloque
 
@@ -347,50 +371,32 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
   end
 end
 
+# Declaracion de Funciones
+class Funcion_ < AST
+  attr_accessor :funcion, :args, :inst, :ret
 
-class Entrada < UnaryOP
-  def print_ast indent=""
-      puts "#{indent} Entrada:"
-
-      attrs.each do |a|
-          a.print_ast indent + "  " if a.respond_to? :print_ast
-      end
-  end
-end
-
-class String_< AST
-  attr_accessor :val
-
-  def initialize val
-    @val = val
+  def initialize f, a, r, i
+      @funcion = f
+      @args = a
+      @ret = r
+      @inst = i
   end
 
   def print_ast indent=""
-      puts "#{indent + '  '}String:"
-      puts "#{indent+ '    '}valor: #{@val.token}"
+      puts "#{indent} Declaracion de funcion:"
+      puts "#{indent + '  '}identificador:"
+      @funcion.print_ast indent + '    '
+      puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
+      @args.print_ast indent + '    ' if @args.respond_to? :print_ast
+      puts "#{indent + '  '}retorna:" if @ret.respond_to? :print_ast
+      @ret.print_ast indent + '    ' if @ret.respond_to? :print_ast
+      puts "#{indent + '  '}instrucciones:"
+      @inst.print_ast indent + '    '
   end
+
 end
 
-class Salida_ < UnaryOP
-  def print_ast indent=""
-      puts "#{indent} Salida:"
-      puts "#{indent + '  '}expresiones:"
-      attrs.each do |a|
-          a.print_ast indent + "    " if a.respond_to? :print_ast
-      end
-  end
-end
-
-class Salida_S < UnaryOP
-  def print_ast indent=""
-      puts "#{indent} Salida con Salto:"
-      puts "#{indent + '  '}expresiones:"
-      attrs.each do |a|
-          a.print_ast indent + "    " if a.respond_to? :print_ast
-      end
-  end
-end
-
+# Programa
 class Retina_ < AST
   attr_accessor :dec, :inst
 
