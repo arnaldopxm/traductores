@@ -91,6 +91,20 @@ class Variables_ < AST
   end
 end
 
+# Strings
+class String_< AST
+  attr_accessor :val
+
+  def initialize val
+    @val = val
+  end
+
+  def print_ast indent=""
+      puts "#{indent}String:"
+      puts "#{indent+ '  '}valor: #{@val.token}"
+  end
+end
+
 # Tipos de Datos
 class TipoDato_ < AST
   attr_accessor :digit
@@ -100,7 +114,7 @@ class TipoDato_ < AST
   end
 
   def print_ast indent=""
-    puts "#{indent} Tipo:"
+    puts "#{indent}Tipo:"
     puts "#{indent + '  '}nombre: #{@digit}"
   end
 end
@@ -117,7 +131,7 @@ class UnaryOP < AST
     end
 
     def print_ast indent=""
-        puts "#{indent} Operador Unario: #{@digit}"
+        puts "#{indent}Operador Unario: #{@digit}"
         attrs.each do |a|
         a.print_ast indent + "  " if a.respond_to? :print_ast
         end
@@ -126,7 +140,7 @@ end
 
 class UnaryMenos < UnaryOP
   def print_ast indent=""
-      puts "#{indent} Menos Unario:"
+      puts "#{indent}Menos Unario:"
 
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
@@ -136,7 +150,7 @@ end
 
 class UnaryNot < UnaryOP
     def print_ast indent=""
-      puts "#{indent} Not:"
+      puts "#{indent}Not:"
 
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
@@ -155,7 +169,7 @@ class BinaryOP < AST
     end
 
     def print_ast indent=""
-        puts "#{indent} #{@name}"
+        puts "#{indent}#{@name}"
         puts "#{indent+'  '}lado izquierdo:"
         @left.print_ast indent + '    '
         puts "#{indent+'  '}lado derecho:"
@@ -191,7 +205,7 @@ class Declaracion_ < AST
   end
 
    def print_ast indent=""
-      puts "#{indent} Declaracion:"
+      puts "#{indent}Declaracion:"
       puts "#{indent + '  '}tipo:"
       @tipo.print_ast indent + '    '
       puts "#{indent + '  '}identificadores:"
@@ -209,7 +223,7 @@ class Palabra_ < AST
   end
 
   def print_ast indent=""
-      puts "#{indent} Palabra Reservada:"
+      puts "#{indent}Palabra Reservada:"
       puts "#{indent + '  '}nombre: #{@nombre}"
   end
 end
@@ -224,7 +238,7 @@ class LlamadaFunciones_ < AST
   end
 
   def print_ast indent=""
-      puts "#{indent} Llamada a funcion:"
+      puts "#{indent}Llamada a funcion:"
       puts "#{indent + '  '}identificador:"
       @name.print_ast indent + '    '
       puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
@@ -236,7 +250,7 @@ end
 class Return_ < Singleton
 
   def print_ast indent=""
-      puts "#{indent} Return:"
+      puts "#{indent}Return:"
 
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
@@ -249,7 +263,7 @@ end
 class Entrada < Singleton
 
   def print_ast indent=""
-      puts "#{indent} Entrada:"
+      puts "#{indent}Entrada:"
 
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
@@ -261,7 +275,7 @@ end
 class Salida_ < Singleton
 
   def print_ast indent=""
-      puts "#{indent} Salida:"
+      puts "#{indent}Salida:"
       puts "#{indent + '  '}expresiones:"
       attrs.each do |a|
           a.print_ast indent + "    " if a.respond_to? :print_ast
@@ -271,7 +285,7 @@ end
 
 class Salida_S < UnaryOP
   def print_ast indent=""
-      puts "#{indent} Salida con Salto:"
+      puts "#{indent}Salida con Salto:"
       puts "#{indent + '  '}expresiones:"
       attrs.each do |a|
           a.print_ast indent + "    " if a.respond_to? :print_ast
@@ -289,7 +303,7 @@ class Bloque < AST
   end
 
   def print_ast indent=""
-      puts "#{indent} Bloque:"
+      puts "#{indent}Bloque:"
       puts "#{indent + '  '}declaraciones:"
       @dec.print_ast indent + '    ' if @dec.respond_to? :print_ast
       puts "#{indent + '  '}instrucciones:"
@@ -308,13 +322,13 @@ class Condicional < AST
     @bloq = c
   end
   def print_ast indent=""
-      puts "#{indent} Condicional:"
+      puts "#{indent}Condicional:"
       puts "#{indent + '  '}if:"
-      @cond0.print_ast indent + '  '
+      @cond0.print_ast indent + '    '
       puts "#{indent + '  '}else:" if @cond1.respond_to? :print_ast
-      @cond1.print_ast indent + '  ' if @cond1.respond_to? :print_ast
+      @cond1.print_ast indent + '    ' if @cond1.respond_to? :print_ast
       puts "#{indent + '  '}instrucciones:"
-      @bloq.print_ast indent + '  '
+      @bloq.print_ast indent + '    '
   end
 end
 
@@ -327,7 +341,7 @@ class IteracionIndeterminada < AST
   end
 
   def print_ast indent=""
-    puts "#{indent} Iteracion Indeterminada: "
+    puts "#{indent}Iteracion Indeterminada: "
     puts "#{indent + '  '}mientras:"
     @exp.print_ast indent + '    '
     puts "#{indent + '  '}instrucciones:"
@@ -347,7 +361,7 @@ class IteracionDeterminada < AST
   end
 
   def print_ast indent=""
-    puts "#{indent} Iteracion Determinada: "
+    puts "#{indent}Iteracion Determinada: "
     puts "#{indent + '  '}sobre:" if @var.respond_to? :print_ast
     @var.print_ast indent + '    ' if @var.respond_to? :print_ast
     puts "#{indent + '  '}desde:" if @desde.respond_to? :print_ast
@@ -363,7 +377,7 @@ end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
   def print_ast indent=""
-    puts "#{indent} Iteracion Determinada: "
+    puts "#{indent}Iteracion Determinada: "
     puts "#{indent + '  '}repeat:"
     @bloque.print_ast indent + '    '
     puts "#{indent + '  '}times:"
@@ -383,7 +397,7 @@ class Funcion_ < AST
   end
 
   def print_ast indent=""
-      puts "#{indent} Declaracion de funcion:"
+      puts "#{indent}Declaracion de funcion:"
       puts "#{indent + '  '}identificador:"
       @funcion.print_ast indent + '    '
       puts "#{indent + '  '}argumentos:" if @args.respond_to? :print_ast
@@ -407,8 +421,8 @@ class Retina_ < AST
 
   def print_ast indent=""
       puts "declaraciones:" if @dec.respond_to? :print_ast
-      @dec.print_ast indent if @dec.respond_to? :print_ast
+      @dec.print_ast indent + '  ' if @dec.respond_to? :print_ast
       puts "instrucciones:" if @inst.respond_to? :print_ast
-      @inst.print_ast indent if @inst.respond_to? :print_ast
+      @inst.print_ast indent + '  ' if @inst.respond_to? :print_ast
   end
 end

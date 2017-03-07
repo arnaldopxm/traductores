@@ -93,11 +93,14 @@ rule
     | 'boolean'                     {result = Boolean_.new(val[0])}
     ;
 
+  String: 'string' {result = String_.new(val[0])}
+    ;
+
   Operaciones: '(' Operaciones ')'  {result = val[1]}
     | Operador                      {result = val[0]}
     | '-' Operador = UMENOS         {result = UnaryMenos.new(val[1])}
     | 'not' Operador                {result = UnaryNot.new(val[1])}
-    | Operador '+' Operador         {result = OpSuma.new(val[0],val[2],'Suma:')}
+    | Operador '+' Operaciones         {result = OpSuma.new(val[0],val[2],'Suma:')}
     | Operador '-' Operador         {result = OpResta.new(val[0],val[2],'Resta:')}
     | Operador '/' Operador         {result = OpDivision.new(val[0],val[2],'Division:')}
     | Operador '*' Operador         {result = OpMultiplication.new(val[0],val[2],'Multiplicacion:')}
@@ -146,8 +149,15 @@ rule
     | PalabrasReserv '(' Args ')'   {result = LlamadaFunciones_.new(val[0],val[2])}
     ;
 
-  Return: 'return' Operaciones      {result = Return_.new(val[1])}
-    | 'return' LLamadaFunciones     {result = Return_.new(val[1])}
+  ReturnElems: Operaciones {result = val[0]}
+    | LLamadaFunciones {result = val[1]}
+    | String {result = val[0]}
+    | ReturnElems ',' Operaciones {result = EnSerie.new(val[0],val[2])}
+    | ReturnElems ',' LLamadaFunciones {result = EnSerie.new(val[0],val[2])}
+    | ReturnElems ',' String {result = EnSerie.new(val[0],val[2])}
+    ;
+
+  Return: 'return' ReturnElems      {result = Return_.new(val[1])}
     ;
 
   Entrada: 'read' Variable {result = Entrada.new(val[1])}
