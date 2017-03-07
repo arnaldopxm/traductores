@@ -31,6 +31,7 @@ class EnSerie < AST
   end
 end
 
+
 # Estructuras de atributo unico
 class Singleton < AST
     attr_accessor :operand
@@ -100,7 +101,7 @@ class String_< AST
   end
 
   def print_ast indent=""
-      puts "#{indent}String:"
+      puts "#{indent}Cadena Caracteres:"
       puts "#{indent+ '  '}valor: #{@val.token}"
   end
 end

@@ -76,12 +76,6 @@ start Retina
 
 rule
 
-  Operador: 'numero'                {result = Numero_.new(val[0])}
-    | 'true'                        {result = True_.new(val[0])}
-    | 'false'                       {result = False_.new(val[0])}
-    | Variable                      {result = val[0]}
-    ;
-
   Variable: 'variable'              {result = Variables_.new(val[0])}
     ;
 
@@ -95,26 +89,29 @@ rule
 
   String: 'string' {result = String_.new(val[0])}
     ;
-
-  Operaciones: '(' Operaciones ')'  {result = val[1]}
-    | Operador                      {result = val[0]}
-    | '-' Operador = UMENOS         {result = UnaryMenos.new(val[1])}
-    | 'not' Operador                {result = UnaryNot.new(val[1])}
-    | Operador '+' Operaciones         {result = OpSuma.new(val[0],val[2],'Suma:')}
-    | Operador '-' Operador         {result = OpResta.new(val[0],val[2],'Resta:')}
-    | Operador '/' Operador         {result = OpDivision.new(val[0],val[2],'Division:')}
-    | Operador '*' Operador         {result = OpMultiplication.new(val[0],val[2],'Multiplicacion:')}
-    | Operador 'mod' Operador       {result = OpMod.new(val[0],val[2],'Modulo:')}
-    | Operador 'div' Operador       {result = OpDiv.new(val[0],val[2],'Division:')}
-    | Operador '%' Operador         {result = OpModulo.new(val[0],val[2],'Modulo:')}
-    | Operador '>' Operador         {result = OpMayor.new(val[0],val[2],'Mayor Estricto:')}
-    | Operador '<' Operador         {result = OpMenor.new(val[0],val[2],'Menor Estricto:')}
-    | Operador '>=' Operador        {result = OpMayorIgual.new(val[0],val[2],'Mayor Igual:')}
-    | Operador '<=' Operador        {result = OpMenorIgual.new(val[0],val[2],'Menor Igual')}
-    | Operador'and' Operador        {result = OpAnd.new(val[0],val[2],'And:')}
-    | Operador'or' Operador         {result = OpOr.new(val[0],val[2],'Or:')}
-    | Operador'==' Operador         {result = OpIgual.new(val[0],val[2],'Equivalente:')}
-    | Operador'\=' Operador         {result = OpDistinto.new(val[0],val[2],'Distinto:')}
+   
+  Operaciones: '(' Operaciones ')'        {result = val[1]}
+	|'numero'                			  {result = Numero_.new(val[0])}
+    | 'true'                        	  {result = True_.new(val[0])}
+    | 'false'                       	  {result = False_.new(val[0])}
+    | Variable                      	  {result = val[0]}
+    | '-' Operaciones = UMENOS         	  {result = UnaryMenos.new(val[1])}
+    | 'not' Operaciones                	  {result = UnaryNot.new(val[1])}
+    | Operaciones '+' Operaciones         {result = OpSuma.new(val[0],val[2],'Suma:')}
+    | Operaciones '-' Operaciones         {result = OpResta.new(val[0],val[2],'Resta:')}
+    | Operaciones '/' Operaciones         {result = OpDivision.new(val[0],val[2],'Division:')}
+    | Operaciones '*' Operaciones         {result = OpMultiplication.new(val[0],val[2],'Multiplicacion:')}
+    | Operaciones 'mod' Operaciones       {result = OpMod.new(val[0],val[2],'Modulo:')}
+    | Operaciones 'div' Operaciones       {result = OpDiv.new(val[0],val[2],'Division:')}
+    | Operaciones '%' Operaciones         {result = OpModulo.new(val[0],val[2],'Modulo:')}
+    | Operaciones '>' Operaciones         {result = OpMayor.new(val[0],val[2],'Mayor Estricto:')}
+    | Operaciones '<' Operaciones         {result = OpMenor.new(val[0],val[2],'Menor Estricto:')}
+    | Operaciones '>=' Operaciones        {result = OpMayorIgual.new(val[0],val[2],'Mayor Igual:')}
+    | Operaciones '<=' Operaciones        {result = OpMenorIgual.new(val[0],val[2],'Menor Igual')}
+    | Operaciones'and' Operaciones        {result = OpAnd.new(val[0],val[2],'And:')}
+    | Operaciones'or' Operaciones         {result = OpOr.new(val[0],val[2],'Or:')}
+    | Operaciones'==' Operaciones         {result = OpIgual.new(val[0],val[2],'Equivalente:')}
+    | Operaciones'\=' Operaciones         {result = OpDistinto.new(val[0],val[2],'Distinto:')}
     ;
 
   Declaracion: TipoDeDato Variables ';' {result = Declaracion_.new(val[0],val[1])}
@@ -122,7 +119,7 @@ rule
     ;
 
   Declaraciones: Declaracion     {result = val[0]}
-    | Declaracion Declaraciones {result = EnSerie.new(val[0],val[2])}
+    | Declaracion Declaraciones {result = EnSerie.new(val[0],val[1])}
     ;
 
   Asignacion: Variable '=' Operaciones {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
@@ -163,7 +160,7 @@ rule
   Entrada: 'read' Variable {result = Entrada.new(val[1])}
     ;
 
-  ElemSalida: 'string'              {result = val[0]}
+  ElemSalida: 'string'              {result = String_.new(val[0])}
     | Operaciones                   {result = val[0]}
     | LLamadaFunciones              {result = val[0]}
     ;
@@ -183,8 +180,8 @@ rule
     | 'if' Operaciones 'then' Instrucciones 'end'       {result = Condicional.new(val[1],nil,val[3])}
     | 'if' Operaciones 'then' Instrucciones 'else' Instrucciones 'end' {result = Condicional.new(val[1],val[3],val[5])}
     | 'while' Operaciones 'do' Instrucciones 'end'      {result = IteracionIndeterminada.new(val[1],val[3])}
-    | 'for' Operador 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[7])}
-    | 'for' Operador 'from' Operaciones 'to' Operaciones 'by' Operaciones 'do' Instrucciones 'end' {result= IteracionDeterminada.new(val[1],val[3],val[5],val[7],val[9])}
+    | 'for' Operaciones 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[7])}
+    | 'for' Operaciones 'from' Operaciones 'to' Operaciones 'by' Operaciones 'do' Instrucciones 'end' {result= IteracionDeterminada.new(val[1],val[3],val[5],val[7],val[9])}
     | 'repeat' Operaciones 'times' Instrucciones 'end'  {result = IteracionDeterminadaRepeat.new(nil,nil,val[1],nil,val[3])}
     ;
 
@@ -215,7 +212,7 @@ rule
     ;
 
   DeclaracionFunciones: DeclaracionFuncion ';'      {result = val[0]}
-    | DeclaracionFuncion ';' DeclaracionFunciones   {result = EnSerie.new(val[0],val[1])}
+    | DeclaracionFunciones DeclaracionFuncion ';'   {result = EnSerie.new(val[0],val[1])}
     ;
 
   Program: 'program' Instrucciones 'end' ';'        {result = val[1]}
