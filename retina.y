@@ -115,7 +115,7 @@ rule
     ;
 
   Declaracion: TipoDeDato Variables ';' {result = Declaracion_.new(val[0],val[1])}
-    | TipoDeDato Asignacion ';'        {result = Declaracion_.new(val[0],val[1])}
+    | TipoDeDato Asignacion ';'         {result = Declaracion_.new(val[0],val[1])}
     ;
 
   Declaraciones: Declaracion     {result = val[0]}
@@ -123,6 +123,7 @@ rule
     ;
 
   Asignacion: Variable '=' Operaciones {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
+    | Variable '=' LLamadaFunciones    {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
     ;
 
   PalabrasReserv:'home'             {result = Palabra_.new(val[0])}

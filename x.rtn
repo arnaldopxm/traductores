@@ -1,0 +1,4 @@
+func asd(boolean x, number y, number z) -> boolean
+begin
+  x = -10+1;
+end;

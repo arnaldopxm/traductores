@@ -1,18 +1,21 @@
+require_relative "errors.rb"
+
 # Super Clase
 class AST
-    def print_ast indent=""
-        puts "#{indent}#{self.class}:"
 
-        attrs.each do |a|
-            a.print_ast indent + "  " if a.respond_to? :print_ast
-        end
-    end
+  def print_ast indent=""
+      puts "#{indent}#{self.class}:"
 
-    def attrs
-        instance_variables.map do |a|
-            instance_variable_get a
-        end
-    end
+      attrs.each do |a|
+          a.print_ast indent + "  " if a.respond_to? :print_ast
+      end
+  end
+
+  def attrs
+      instance_variables.map do |a|
+          instance_variable_get a
+      end
+  end
 end
 
 # Operadores En Serie
@@ -28,6 +31,11 @@ class EnSerie < AST
     attrs.each do |a|
         a.print_ast indent if a.respond_to? :print_ast
     end
+  end
+
+  def check table
+    @arg0.check table
+    @arg1.check table
   end
 end
 
@@ -90,6 +98,10 @@ class Variables_ < AST
       puts "#{indent}Identificador:"
       puts "#{indent+'  '}nombre: #{@digit}"
   end
+
+  def check table
+    return table.find @digit
+  end
 end
 
 # Strings
@@ -137,6 +149,7 @@ class UnaryOP < AST
         a.print_ast indent + "  " if a.respond_to? :print_ast
         end
     end
+
 end
 
 class UnaryMenos < UnaryOP
@@ -147,16 +160,26 @@ class UnaryMenos < UnaryOP
           a.print_ast indent + "  " if a.respond_to? :print_ast
       end
   end
+
+  def check table
+    #AARREEGLARRRR
+    return ['number',"-#{@operand.digit}"]
+  end
 end
 
 class UnaryNot < UnaryOP
-    def print_ast indent=""
-      puts "#{indent}Not:"
+  def print_ast indent=""
+    puts "#{indent}Not:"
 
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
       end
   end
+
+  def check table
+    return ['boolean',"not #{@operand.digit}"]
+  end
+
 end
 
 # Operadores Binarios
@@ -178,22 +201,101 @@ class BinaryOP < AST
     end
 end
 
-class OpSuma < BinaryOP;end
-class OpResta < BinaryOP;end
-class OpMultiplication < BinaryOP;end
-class OpDivision < BinaryOP;end
-class OpDiv < BinaryOP;end
-class OpModulo < BinaryOP;end
-class OpMod < BinaryOP;end
+class OpAritmetico_ < BinaryOP
+
+  def check table
+    if @left.class == UnaryMenos
+      puts 'caso1'
+      x = @left.check table
+      ##AARRREEEGLAARRR
+      if []
+    end
+
+    if @left.class < OpAritmetico_
+      @left.check table
+      @right.check table
+    end
+
+    if @left.class == Variables_
+      if table.exist @left.digit
+        puts @left.exist(@left.digit)
+        if @left.check(table) != 'number'
+          raise ErrorDeTipo.new @left.digit,@left.check(table),'number'
+        end
+      else
+        raise VariableNoDeclarada.new @left.digit
+      end
+    end
+
+  end
+end
+
+class OpSuma < OpAritmetico_;end
+class OpResta < OpAritmetico_;end
+class OpMultiplication < OpAritmetico_;end
+class OpDivision < OpAritmetico_;end
+class OpDiv < OpAritmetico_;end
+class OpModulo < OpAritmetico_;end
+class OpMod < OpAritmetico_;end
+class OpMayor < OpAritmetico_;end
+class OpMenor < OpAritmetico_;end
+class OpMayorIgual < OpAritmetico_;end
+class OpMenorIgual < OpAritmetico_;end
+
 class OpIgual < BinaryOP;end
 class OpDistinto < BinaryOP;end
-class OpMayor < BinaryOP;end
-class OpMenor < BinaryOP;end
-class OpMayorIgual < BinaryOP;end
-class OpMenorIgual < BinaryOP;end
+
 class OpAnd < BinaryOP;end
 class OpOr < BinaryOP;end
-class OpAsignacion < BinaryOP;end
+
+class OpAsignacion < BinaryOP
+
+  def check table
+    if  !table.exist @left.digit
+      raise VariableNoDeclarada.new @left.digit
+    end
+
+    esp = table.find @left.digit
+
+    if @right.class < UnaryOP
+      puts 'caso 1'
+      x = @right.check table
+      act = x[0]
+      tok = x[1]
+
+    elsif @right.class == Variables_
+      tok = @right.digit
+      if table.exist @right.digit
+        act = table.find tok
+      else
+        raise VariableNoDeclarada.new @right.digit
+      end
+
+
+    elsif @right.class < Bools_ or @right.class == Numero_
+      puts 'caso 2'
+      tok = @right.digit
+      if @right.class == Numero_
+        act = 'number'
+      else
+        act = 'boolean'
+      end
+
+    else
+      puts 'caso 3'
+      puts '..'
+      @right.check table
+      puts '//'
+
+    end
+
+    unless esp == act
+      raise ErrorDeTipo.new tok, act, esp
+    end
+
+  end
+
+end
 
 # Declaraciones
 class Declaracion_ < AST
@@ -211,6 +313,12 @@ class Declaracion_ < AST
       @tipo.print_ast indent + '    '
       puts "#{indent + '  '}identificadores:"
       @ident.print_ast indent + '    '
+  end
+
+  def check table
+    table.insert @ident.digit, @tipo.digit
+    #puts table.attrs
+    return table
   end
 end
 
@@ -409,6 +517,23 @@ class Funcion_ < AST
       @inst.print_ast indent + '    '
   end
 
+  def check table
+    t = TablasDeAlcance.new table
+    #puts t.attrs
+    if @ret
+      if @ret.class == Bools_
+        t.tabla['ret'] = 'boolean'
+      else
+        t.tabla['ret'] = 'number'
+      end
+    else
+      t.tabla['ret']=false
+    end
+    table.insert @funcion.digit, @args.check(t)
+
+    @inst.check t
+  end
+
 end
 
 # Programa
@@ -426,4 +551,53 @@ class Retina_ < AST
       puts "instrucciones:" if @inst.respond_to? :print_ast
       @inst.print_ast indent + '  ' if @inst.respond_to? :print_ast
   end
+
+  def check
+    table = TablasDeAlcance.new nil
+    @dec.check table
+    #table.insert 'declaraciones', @dec.check table if @dec.respond_to? :check
+    #table.insert 'instrucciones', @inst.check table if @inst.respond_to? :check
+    return table
+  end
+
+end
+
+class TablasDeAlcance
+  attr_accessor :tabla, :padre
+
+  def initialize padre
+    @tabla = Hash.new
+    @padre = padre
+  end
+
+  def insert name, value
+    @tabla[name] = value
+  end
+
+  def attrs
+      instance_variables.map do |a|
+          instance_variable_get a
+      end
+  end
+
+  def exist value
+    return true if @tabla[value]
+    if @padre
+      #puts "#{self.attrs} tengo papa #{@padre.attrs}"
+      return @padre.exist value
+    end
+    return false
+  end
+
+  def find value
+    return @tabla[value] if @tabla[value]
+    if @padre
+      return @padre.find value
+    end
+    return nil
+  end
+  # def insertSub name, value
+  #   @sub[name] = value
+  # end
+
 end

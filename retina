@@ -41,7 +41,11 @@ def main
     if !parser.errors.empty?
       puts parser.errors
     else
-      ast.print_ast
+      begin
+        puts ast.check.attrs
+      rescue RuntimeError => e
+        puts e
+      end
     end
   end
 
