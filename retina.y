@@ -91,7 +91,7 @@ rule
     ;
 
   Operaciones: '(' Operaciones ')'        {result = val[1]}
-    | 'numero'                             {result = Numero_.new(val[0])}
+    | 'numero'                            {result = Numero_.new(val[0])}
     | 'true'                              {result = True_.new(val[0])}
     | 'false'                             {result = False_.new(val[0])}
     | Variable                            {result = val[0]}
@@ -115,7 +115,7 @@ rule
     ;
 
   Declaracion: TipoDeDato Variables ';' {result = Declaracion_.new(val[0],val[1])}
-    | TipoDeDato Asignacion ';'         {result = Declaracion_.new(val[0],val[1])}
+    | TipoDeDato Asignacion ';'        {result = Declaracion_.new(val[0],val[1])}
     ;
 
   Declaraciones: Declaracion     {result = val[0]}
@@ -123,7 +123,7 @@ rule
     ;
 
   Asignacion: Variable '=' Operaciones {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
-    | Variable '=' LLamadaFunciones    {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
+    | Variable '=' LLamadaFunciones    {result = OpAsignacion.new(val[0],val[2],'Asignacion: ')}
     ;
 
   PalabrasReserv:'home'             {result = Palabra_.new(val[0])}
@@ -149,10 +149,8 @@ rule
 
   ReturnElems: Operaciones {result = val[0]}
     | LLamadaFunciones {result = val[1]}
-    | String {result = val[0]}
     | ReturnElems ',' Operaciones {result = EnSerie.new(val[0],val[2])}
     | ReturnElems ',' LLamadaFunciones {result = EnSerie.new(val[0],val[2])}
-    | ReturnElems ',' String {result = EnSerie.new(val[0],val[2])}
     ;
 
   Return: 'return' ReturnElems      {result = Return_.new(val[1])}
@@ -161,7 +159,7 @@ rule
   Entrada: 'read' Variable {result = Entrada.new(val[1])}
     ;
 
-  ElemSalida: 'string'              {result = String_.new(val[0])}
+  ElemSalida: String                {result = val[0]}
     | Operaciones                   {result = val[0]}
     | LLamadaFunciones              {result = val[0]}
     ;
@@ -186,14 +184,14 @@ rule
     | 'repeat' Operaciones 'times' Instrucciones 'end'  {result = IteracionDeterminadaRepeat.new(nil,nil,val[1],nil,val[3])}
     ;
 
-  Instruccion: LLamadaFunciones     {result = val[0]}
-    | Asignacion                    {result = val[0]}
-    | Operaciones                   {result = val[0]}
+  Instruccion: LLamadaFunciones     {result = val[0]}#
+    | Asignacion                    {result = val[0]}#
+    | Operaciones                   {result = val[0]}#
     | Bloque                        {result = val[0]}
     | Control                       {result = val[0]}
-    | Entrada                       {result = val[0]}
-    | Salida                        {result = val[0]}
-    | Return                        {result = val[0]}
+    | Entrada                       {result = val[0]}#
+    | Salida                        {result = val[0]}#
+    | Return                        {result = val[0]}#
 
   Instrucciones: Instruccion ';'    {result = val[0]}
     | Instruccion ';' Instrucciones {result = EnSerie.new(val[0],val[2])}
