@@ -1,11 +1,3 @@
-=begin
-    Clases del AST de retina
-
-Autores:
-  -Arnaldo Quintero 13-11150
-  -Gabriel Gutierrez 13-10625
-=end
-
 require_relative "errors.rb"
 
 # Super Clase
@@ -798,7 +790,6 @@ class Bloque < AST
     #table.insert 'sub_alcance',
   end
 
-
   def insert table, t
     w = 'sub_alcance'
     i = 1
@@ -947,24 +938,20 @@ class IteracionDeterminada < AST
   end
 
   def insert table, t
-   w = 'sub_alcance'
-   i = 1
+    w = 'sub_alcance'
+    i = 1
 
-   #puts t.exist(w)
-   while t.exist(w)
-     #puts w
-     w = w + i.to_s
-     i += 1
-   end
+    #puts t.exist(w)
+    while t.exist(w)
+      #puts w
+      w = w + i.to_s
+      i += 1
+    end
 
-   #puts "insert #{w}"
-   table.insert w,t
+    #puts "insert #{w}"
+    table.insert w,t
 
-
-  def check_Bloq table
-    @bloque.check table
   end
-
 
   def check_inter table,inter
     if inter.class<OpAritmetico_ or inter.class<=Numero_
@@ -975,16 +962,16 @@ class IteracionDeterminada < AST
 
     elsif inter.class<=Variables_
       x = inter.check table
-      if x==nil
+      if x == nil
         raise VariableNoDeclarada.new inter.digit
       end
 
       if x != 'number'
-        raise ErrorDeTipoArg.new 'El hasta' , inter.class ,'number'
+        raise ErrorDeTipo.new 'El hasta' , inter.class ,'number'
       end
 
     else
-      raise ErrorDeTipoArg.new 'El hasta' , inter.class ,'number'
+      raise ErrorDeTipo.new 'El hasta' , inter.class ,'number'
     end
   end
 
@@ -1009,10 +996,10 @@ class IteracionDeterminada < AST
   def check_Bloq table
     @bloque.check table
   end
+
 end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
-
   def print_ast indent=""
     puts "#{indent}Iteracion Determinada: "
     puts "#{indent + '  '}repeat:"
@@ -1020,34 +1007,6 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
     puts "#{indent + '  '}times:"
     @hasta.print_ast indent + '    '
   end
-
-  def check_Bloq table
-    @bloque.check table
-  end
-
-
-  def check_inter table,inter
-    if inter.class<OpAritmetico_ or inter.class<=Numero_
-      x=inter.check table
-      if x[0] != 'number'
-        raise ErrorDeTipo.new 'El repeat' , inter.class ,'number'
-      end
-
-    elsif inter.class<=Variables_
-      x = inter.check table
-      if x==nil
-        raise VariableNoDeclarada.new inter.digit
-      end
-
-      if x != 'number'
-        raise ErrorDeTipoArg.new 'El repeat' , inter.class ,'number'
-      end
-
-    else
-      raise ErrorDeTipoArg.new 'El repeat' , inter.class ,'number'
-    end
-  end
-
 end
 
 # Declaracion de Funciones
@@ -1089,8 +1048,8 @@ class Funcion_ < AST
     if table.exist @funcion.digit
       raise ErrorExistencia.new @funcion.digit
     else
-      table.insert @funcion.digit, TablasDeAlcance.new(table)
-      table.insert @funcion.digit, @args.check(t) if @args. respond_to? :check
+        table.insert @funcion.digit, TablasDeAlcance.new(table)
+        table.insert @funcion.digit, @args.check(t) if @args. respond_to? :check
     end
 
     @inst.check t
@@ -1129,7 +1088,6 @@ class Retina_ < AST
     @inst.check tableProg
     #table.insert 'declaraciones', @dec.check table if @dec.respond_to? :check
     #table.insert 'instrucciones', @inst.check table if @inst.respond_to? :check
-    table.to_s
     return table
   end
 
@@ -1137,10 +1095,6 @@ end
 
 class TablasDeAlcance
   attr_accessor :tabla, :padre
-
-  def to_s
-    #@tabla.map { |e| if e!='has_r' or e!='ret' then puts e end}
-  end
 
   def initialize padre
     @tabla = Hash.new

@@ -1,3 +1,11 @@
+/*
+Libreria que contiene el codigo del parser de retina
+
+Autores:
+  -Arnaldo Quintero 13-11150
+  -Gabriel Gutierrez 13-10625
+*/
+
 class Parser
 
   token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'string' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' 'with' UMENOS
@@ -219,7 +227,6 @@ rule
     ;
 
   Retina: DeclaracionFunciones Program      {result = Retina_.new(val[0],val[1])}
-    | DeclaracionFunciones                  {result = Retina_.new(val[0],nil)}
     | Program                               {result = Retina_.new(nil,val[0])}
     ;
 

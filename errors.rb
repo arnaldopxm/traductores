@@ -1,3 +1,11 @@
+=begin
+Libreria que contiene los errores que se llaman en los checks del AST
+
+Autores:
+  -Arnaldo Quintero 13-11150
+  -Gabriel Gutierrez 13-10625
+=end
+
 class VariableNoDeclarada < RuntimeError
   def initialize tok
     @token = tok
@@ -100,5 +108,11 @@ class ErrorCantArgumentos < RuntimeError
 
   def to_s
     "Error: funcion '#{@tok}', '#{@esp}' argumentos esperados, '#{@act}' recibidos"
+  end
+end
+
+class ErrorDeTipoArg < ErrorDeTipo
+  def to_s
+    "Error: '#{@token}' contiene una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'"
   end
 end
