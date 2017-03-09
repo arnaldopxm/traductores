@@ -557,20 +557,23 @@ class LlamadaFunciones_ < AST
       reserv = true
     else
       ident = @name.digit
-      e = table.padre.exist ident
+      e = table.exist ident
       if !e
         raise FuncionNoDeclarada.new @name.digit
       end
     end
 
-    cant = cantidadArgs ident, table
+    x = cantidadArgs ident, table
+    cant = x[0]
     act = argsActuales @args
     #puts "#{act}, #{cant}"
+    #puts x[1]
 
     if act != cant
       raise ErrorCantArgumentos.new ident, cant, act
     else
-      checkTypes @args, table, cant, ident, reserv
+      ###
+      checkTypes @args, table, cant, ident, reserv, x[1]
       if table.exist 'ret'
         return [table.find('ret'),ident]
       else
@@ -600,19 +603,22 @@ class LlamadaFunciones_ < AST
     return z
   end
 
-  def checkTypes args, table, cant, ident, reserv
+  def checkTypes args, table, cant, ident, reserv, array
 
-    array = table.tabla.to_a[1..-2]
+    #puts array
 
     if cant == 1
       t = args.check table
       if reserv
         raise ErrorDeTipo.new args.digit,t,'number' if t != 'number'
+      else
+        raise ErrorDeTipo.new args.digit,t,array[0][1] if t != array[0][1]
       end
 
     else
       z = recursive args, table
       #puts z
+      #puts '.'
       for i in 0..cant-1
         #puts "#{z[i]}, #{array[i]}"
         raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1] if array[i][1] != z[i][0]
@@ -645,7 +651,17 @@ class LlamadaFunciones_ < AST
     elsif ['setposition','arc'].include? name
       return 2
     else
-      return table.find(name).tabla.count - 2
+      i = 0
+      x = []
+      table.find(name).tabla.each do |a|
+        if ['ret','has_r'].include? a[0]
+        elsif ! ['boolean','number'].include? a[1]
+        else
+          i = i+1
+          x << a
+        end
+      end
+      return [i,x]
     end
   end
 
@@ -768,9 +784,26 @@ class Bloque < AST
     ####################
     t.tabla['s'] = true
     @dec.check t if @dec.respond_to? :check
-    table.insert 'sub_alcance',t
+    insert table, t
+    #table.insert 'sub_alcance',t
     @ins.check t
     #table.insert 'sub_alcance',
+  end
+
+  def insert table, t
+    w = 'sub_alcance'
+    i = 1
+
+    #puts t.exist(w)
+    while t.exist(w)
+      #puts w
+      w = w + i.to_s
+      i += 1
+    end
+
+    #puts "insert #{w}"
+    table.insert w,t
+
   end
 end
 
@@ -798,7 +831,7 @@ class Condicional < AST
     self.check_cond table,@cond0
     self.check_Bloq table,@bloq
     if @cond1!= nil
-      self.check_Bloq(table,@cond1)
+      self.check_Bloq table,@cond1
     end
   end
 
@@ -808,17 +841,11 @@ class Condicional < AST
       if x[0] != 'boolean'
         raise ErrorDeTipo.new 'El argumento del If' , x[0] ,'Operacion Comparacion'
       end
-
-    elsif cond.class <= Variables_
-      x = cond.check table
+    elsif cond.class<=Variables_
+      x= cond.check table
       if x==nil
         raise VariableNoDeclarada.new cond.digit
       end
-
-      if x != 'number'
-        raise ErrorDeTipo.new 'El argumento del If' , cond.class ,'Operacion Comparacion'
-      end
-
     else
       raise ErrorDeTipo.new 'El argumento del If' , cond.class,'Operacion Comparacion'
     end
@@ -901,54 +928,75 @@ class IteracionDeterminada < AST
 
   def check table
     tableFor = TablasDeAlcance.new table
-    table.insert 'SubAlcanceFrom' , tableFor
+    #table.insert 'sub_alcance' , tableFor
+    insert table, tableFor
     self.check_var tableFor
     self.check_inter tableFor,@desde
     self.check_inter tableFor, @hasta
+    self.check_inter tableFor, @incremento if @incremento.respond_to? :check
+    self.check_Bloq tableFor
+  end
+
+  def insert table, t
+    w = 'sub_alcance'
+    i = 1
+
+    #puts t.exist(w)
+    while t.exist(w)
+      #puts w
+      w = w + i.to_s
+      i += 1
+    end
+
+    #puts "insert #{w}"
+    table.insert w,t
+
   end
 
   def check_inter table,inter
-    puts inter.class
-    if inter.class<OpAritmetico_ or inter.class<=Number_
-      x=@inter.check table
+    if inter.class<OpAritmetico_ or inter.class<=Numero_
+      x=inter.check table
       if x[0] != 'number'
-        raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+        raise ErrorDeTipo.new 'El hasta' , inter.class ,'number'
       end
 
-    elsif inter.class <= Variables_
-      x=@inter.check table
-      if x==nil
-        raise VariableNoDeclarada.new @inter.digit
+    elsif inter.class<=Variables_
+      x = inter.check table
+      if x == nil
+        raise VariableNoDeclarada.new inter.digit
       end
 
       if x != 'number'
-        raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+        raise ErrorDeTipo.new 'El hasta' , inter.class ,'number'
       end
 
     else
-      raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+      raise ErrorDeTipo.new 'El hasta' , inter.class ,'number'
     end
   end
 
   def check_var table
-    puts @var.class
     if @var.class<OpAritmetico_
-      x=@exp.check table
+      x=@var.check table
       if x[0] != 'number'
         raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
       end
     elsif @var.class<=Variables_
       table.insert @var.digit,'number'
     elsif @var.class<=Numero_
-      puts
       x=@var.check table
       if x[0] != 'number'
-        raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+        raise ErrorDeTipo.new 'El argumento del for' , @var.class ,'number'
       end
     else
-      raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+      raise ErrorDeTipo.new 'El argumento del for' , @var.class ,'number'
     end
   end
+
+  def check_Bloq table
+    @bloque.check table
+  end
+
 end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
@@ -959,12 +1007,6 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
     puts "#{indent + '  '}times:"
     @hasta.print_ast indent + '    '
   end
-
-  def check
-    #@hasta, @bloque
-
-  end
-
 end
 
 # Declaracion de Funciones
@@ -1006,7 +1048,7 @@ class Funcion_ < AST
     if table.exist @funcion.digit
       raise ErrorExistencia.new @funcion.digit
     else
-                                    ###############
+        table.insert @funcion.digit, TablasDeAlcance.new(table)
         table.insert @funcion.digit, @args.check(t) if @args. respond_to? :check
     end
 
@@ -1040,10 +1082,10 @@ class Retina_ < AST
 
   def check
     table = TablasDeAlcance.new nil
-    @dec.check table
+    @dec.check table if @dec.respond_to? :check
     tableProg = TablasDeAlcance.new table
     table.insert 'program' , tableProg
-    #@inst.check tableProg
+    @inst.check tableProg
     #table.insert 'declaraciones', @dec.check table if @dec.respond_to? :check
     #table.insert 'instrucciones', @inst.check table if @inst.respond_to? :check
     return table
