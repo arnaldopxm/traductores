@@ -986,6 +986,7 @@ class IteracionDeterminada < AST
   end
 
   def check_var table
+    puts @var.class
     if @var.class<OpAritmetico_
       x=@var.check table
       if x[0] != 'number'
@@ -993,6 +994,15 @@ class IteracionDeterminada < AST
       end
     elsif @var.class<=Variables_
       table.insert @var.digit,'number'
+      x = @var.check table
+      if x == nil
+        raise VariableNoDeclarada.new @var.digit
+      end
+
+      if x != 'number'
+        raise ErrorDeTipoArg.new 'El hasta' , @var.class ,'number'
+      end
+
     elsif @var.class<=Numero_
       x=@var.check table
       if x[0] != 'number'
