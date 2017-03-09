@@ -947,18 +947,15 @@ class IteracionDeterminada < AST
   end
 
   def insert table, t
-   w = 'sub_alcance'
-   i = 1
-
-   #puts t.exist(w)
-   while t.exist(w)
+    w = 'sub_alcance'
+    i = 1
+    while t.exist(w)
      #puts w
      w = w + i.to_s
      i += 1
-   end
-
-   #puts "insert #{w}"
-   table.insert w,t
+    end
+    table.insert w,t
+  end
 
 
   def check_Bloq table
@@ -992,7 +989,7 @@ class IteracionDeterminada < AST
     if @var.class<OpAritmetico_
       x=@var.check table
       if x[0] != 'number'
-        raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+        raise ErrorDeTipo.new 'El argumento del for' , @var.class ,'number'
       end
     elsif @var.class<=Variables_
       table.insert @var.digit,'number'
