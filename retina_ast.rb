@@ -767,10 +767,8 @@ class Bloque < AST
     t = TablasDeAlcance.new table
     ####################
     t.tabla['s'] = true
-    if @dec.respond_to? :check
-      @dec.check t
-      table.insert 'sub_alcance',t
-    end
+    @dec.check t if @dec.respond_to? :check
+    table.insert 'sub_alcance',t
     @ins.check t
     #table.insert 'sub_alcance',
   end
@@ -798,9 +796,9 @@ class Condicional < AST
 
   def check table
     self.check_cond table,@cond0
-    self.check_Bloq tabel,@bloq
+    self.check_Bloq table,@bloq
     if @cond1!= nil
-      self.check_Bloq(@cond1)
+      self.check_Bloq(table,@cond1)
     end
   end
 
@@ -810,13 +808,24 @@ class Condicional < AST
       if x[0] != 'boolean'
         raise ErrorDeTipo.new 'El argumento del If' , x[0] ,'Operacion Comparacion'
       end
+
+    elsif cond.class <= Variables_
+      x = cond.check table
+      if x==nil
+        raise VariableNoDeclarada.new cond.digit
+      end
+
+      if x != 'number'
+        raise ErrorDeTipo.new 'El argumento del If' , cond.class ,'Operacion Comparacion'
+      end
+
     else
       raise ErrorDeTipo.new 'El argumento del If' , cond.class,'Operacion Comparacion'
     end
   end
 
   def check_Bloq table, bloq
-    bloq.check
+    bloq.check table
   end
 
 end
@@ -836,6 +845,33 @@ class IteracionIndeterminada < AST
     puts "#{indent + '  '}instrucciones:"
     @bloque.print_ast indent + '    '
   end
+
+  def check table
+    self.check_exp table
+    self.check_Bloq table
+
+  end
+
+  def check_exp table
+    x=@exp.check table
+    if x==nil
+      raise VariableNoDeclarada.new @exp.digit
+    end
+
+    if [True_,False_,Variables_].include? @exp.class or @exp.class<OpLogico_ or @exp.class<OpComparacion_
+        if x[0] != 'boolean' and x !='boolean'
+          raise ErrorDeTipo.new 'El argumento del while' , x[0] ,'Booleano'
+        end
+    else
+      raise ErrorDeTipo.new 'El argumento del while' , @exp.class ,'Booleano'
+    end
+  end
+
+  def check_Bloq table
+    @bloque.check table
+  end
+
+
 end
 
 class IteracionDeterminada < AST
@@ -862,6 +898,57 @@ class IteracionDeterminada < AST
     puts "#{indent + '  '}instrucciones:"
     @bloque.print_ast indent + '    '
   end
+
+  def check table
+    tableFor = TablasDeAlcance.new table
+    table.insert 'SubAlcanceFrom' , tableFor
+    self.check_var tableFor
+    self.check_inter tableFor,@desde
+    self.check_inter tableFor, @hasta
+  end
+
+  def check_inter table,inter
+    puts inter.class
+    if inter.class<OpAritmetico_ or inter.class<=Number_
+      x=@inter.check table
+      if x[0] != 'number'
+        raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+      end
+
+    elsif inter.class <= Variables_
+      x=@inter.check table
+      if x==nil
+        raise VariableNoDeclarada.new @inter.digit
+      end
+
+      if x != 'number'
+        raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+      end
+
+    else
+      raise ErrorDeTipo.new 'El hasta' , @inter.class ,'number'
+    end
+  end
+
+  def check_var table
+    puts @var.class
+    if @var.class<OpAritmetico_
+      x=@exp.check table
+      if x[0] != 'number'
+        raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+      end
+    elsif @var.class<=Variables_
+      table.insert @var.digit,'number'
+    elsif @var.class<=Numero_
+      puts
+      x=@var.check table
+      if x[0] != 'number'
+        raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+      end
+    else
+      raise ErrorDeTipo.new 'El argumento del for' , @exp.class ,'number'
+    end
+  end
 end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
@@ -872,6 +959,12 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
     puts "#{indent + '  '}times:"
     @hasta.print_ast indent + '    '
   end
+
+  def check
+    #@hasta, @bloque
+
+  end
+
 end
 
 # Declaracion de Funciones
