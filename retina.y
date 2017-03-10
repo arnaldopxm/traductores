@@ -1,73 +1,82 @@
+/*
+Libreria que contiene el codigo del parser de retina
+
+Autores:
+  -Arnaldo Quintero 13-11150
+  -Gabriel Gutierrez 13-10625
+*/
+
 class Parser
 
-	token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'string' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' 'with' UMENOS
+  token 'true' 'false' 'and' 'or' 'not' '==' '\=' '>=' '<=' '>' '<' ';' '=' '\\' '(' ')' '->' ',' 'numero' 'string' '-' '*' '/' '%' 'mod' 'div' 'program' 'read' 'write' 'writeln' 'if' 'then' 'end' 'while' 'do' 'repeat' 'times' 'func' 'begin' 'return' 'for' 'from' 'to' 'by' 'is' 'home' 'openeye' 'closeeye' 'forward' 'backward' 'rotatel' 'rotater' 'setposition' 'arc' 'boolean' 'number' 'variable' 'with' UMENOS
 
-	prechigh
-			right UMINUS ','
-			left Por Entre Porcentaje Div Mod Coma
-			left Mas Menos
-	preclow
+  prechigh
+      right UMENOS ',' 'not' '='
+      left '*' '/' '%' 'mod' 'div' '==' '\=' '>=' '<=' '>' '<' 'and'
+      left '+' '-' 'or'
+  preclow
 
-	convert
-		'number' 'Number'
-		'boolean' 'Boolean'
-		'true' 'True'
-		'false' 'False'
-		'and' 'And'
-		'or' 'Or'
-		'not' 'Not'
-		'==' 'Igual'
-		'\=' 'Distinto'
-		'>=' 'MayorIgual'
-		'<=' 'MenorIgual'
-		'>' 'Mayor'
-		'<' 'Menor'
-		';' 'Separador'
-		'=' 'Asignacion'
-		'\\' 'BackSlash'
-		'(' 'ParentesisA'
-		')' 'ParentesisC'
-		'->' 'Flecha'
-		','  'Coma'
-		'numero' 'Numero'
-		'string' 'Strings'
-		'-' 'Menos'
-		'*' 'Por'
-		'/' 'Entre'
-		'%' 'Porcentaje'
-		'+' 'Mas'
-		'div' 'Div'
-		'mod' 'Mod'
-		'program' 'Program'
-		'read' 'Read'
-		'write' 'Write'
-		'writeln' 'Writeln'
-		'if' 'If'
-		'then' 'Then'
-		'end' 'End'
-		'while' 'While'
-		'do' 'Do'
-		'repeat' 'Repeat'
-		'times' 'Times'
-		'func' 'Func'
-		'begin' 'Begin'
-		'return' 'Return'
-		'for' 'For'
-		'from' 'From'
-		'to' 'To'
-		'by' 'By'
-		'is' 'Is'
-		'home' 'Home'
-		'openeye' 'OpenEye'
-		'closeeye' 'CloseEye'
-		'forward' 'Forward'
-		'backward' 'Backward'
-		'rotatel' 'RotateL'
-		'rotater' 'RotateR'
-		'setposition' 'SetPosition'
-		'arc' 'Arc'
-		'variable' 'Variables'
-		'with' 'With'
+  convert
+    'number' 'Number'
+    'boolean' 'Boolean'
+    'true' 'True'
+    'false' 'False'
+    'and' 'And'
+    'or' 'Or'
+    'not' 'Not'
+    '==' 'Igual'
+    '\=' 'Distinto'
+    '>=' 'MayorIgual'
+    '<=' 'MenorIgual'
+    '>' 'Mayor'
+    '<' 'Menor'
+    ';' 'Separador'
+    '=' 'Asignacion'
+    '\\' 'BackSlash'
+    '(' 'ParentesisA'
+    ')' 'ParentesisC'
+    '->' 'Flecha'
+    ','  'Coma'
+    'numero' 'Numero'
+    'string' 'Strings'
+    '-' 'Menos'
+    '*' 'Por'
+    '/' 'Entre'
+    '%' 'Porcentaje'
+    '+' 'Mas'
+    'div' 'Div'
+    'mod' 'Mod'
+    'program' 'Program'
+    'read' 'Read'
+    'write' 'Write'
+    'writeln' 'Writeln'
+    'if' 'If'
+    'then' 'Then'
+    'end' 'End'
+    'while' 'While'
+    'do' 'Do'
+    'repeat' 'Repeat'
+    'times' 'Times'
+    'func' 'Func'
+    'begin' 'Begin'
+    'return' 'Return'
+    'for' 'For'
+    'from' 'From'
+    'to' 'To'
+    'by' 'By'
+    'is' 'Is'
+    'home' 'Home'
+    'openeye' 'OpenEye'
+    'closeeye' 'CloseEye'
+    'forward' 'Forward'
+    'backward' 'Backward'
+    'rotatel' 'RotateL'
+    'rotater' 'RotateR'
+    'setposition' 'SetPosition'
+    'arc' 'Arc'
+    'variable' 'Variables'
+    'with' 'With'
+    'else' 'Else'
 
 end
 
@@ -75,162 +84,151 @@ start Retina
 
 rule
 
-	Aritmetica : '(' Aritmetica ')' {val[1]}
-		| Variables { result = val[0]}
-		| Numero {result = val[0]}
-		| '-' Aritmetica = UMENOS {result = UnaryMenos.new(val[1])}
-		| Aritmetica '+' Aritmetica {result = OpSuma.new(val[0],val[2])}
-		| Aritmetica '-' Aritmetica {result = OpResta.new(val[0],val[2])}
-		| Aritmetica '/' Aritmetica {result = OpDivision.new(val[0],val[2])}
-		| Aritmetica '*' Aritmetica {result = OpMultiplication.new(val[0],val[2])}
-		| Aritmetica 'mod' Aritmetica {result = OpMod.new(val[0],val[2])}
-		| Aritmetica 'div' Aritmetica {result = OpDiv.new(val[0],val[2])}
-		| Aritmetica '%' Aritmetica {result = OpModulo.new(val[0],val[2])}
-		;
+  Variable: 'variable'              {result = Variables_.new(val[0])}
+    ;
 
-	Logica: '(' Logica ')' {result = val[1]}
-		| Variables { result = val[0]}
-		| 'true' {result = True_.new(val[0])}
-		| 'false' {result = False_.new(val[0])}
-		| 'not' Logica {result = UnaryNot.new(val[1])}
-		| Logica '>' Logica {result = OpMayor.new(val[0],val[2])}
-		| Logica '<' Logica {result = OpMenor.new(val[0],val[2])}
-		| Logica '>=' Logica {result = OpMayorIgual.new(val[0],val[2])}
-		| Logica '<=' Logica {result = OpMenorIgual.new(val[0],val[2])}
-		| Logica 'and' Logica {result = OpAnd.new(val[0],val[2])}
-		| Logica 'or' Logica {result = OpOr.new(val[0],val[2])}
-		| Logica '==' Logica {result = OpIgual.new(val[0],val[2])}
-		| Logica '\=' Logica {result = OpDistinto.new(val[0],val[2])}
-		;
+  Variables: Variable             {result = val[0]}
+    | Variables ',' Variable      {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	Variables: '(' Variables ')' { result = val[1]}
-		| 'variable' {result = Identificado.new(val[0])}
-		;
+  TipoDeDato: 'number'              {result = Number_.new(val[0])}
+    | 'boolean'                     {result = Boolean_.new(val[0])}
+    ;
 
-		#no esta imprimiendo bien el nombre
-	TipoDeDato: 'number' {result = TipoDato_.new(val[0])}
-	  | 'boolean' {result = TipoDato_.new(val[0])}
-		;
+  String: 'string' {result = String_.new(val[0])}
+    ;
 
-	Declaracion: TipoDeDato Variables {result = OpDeclaracion.new(val[0],val[1])}
-		|TipoDeDato Asignacion {result = OpDeclaracion.new(val[0],val[1])}
-		;
+  Operaciones: '(' Operaciones ')'        {result = val[1]}
+    | 'numero'                            {result = Numero_.new(val[0])}
+    | 'true'                              {result = True_.new(val[0])}
+    | 'false'                             {result = False_.new(val[0])}
+    | Variable                            {result = val[0]}
+    | '-' Operaciones = UMENOS            {result = UnaryMenos.new(val[1])}
+    | 'not' Operaciones                   {result = UnaryNot.new(val[1])}
+    | Operaciones '+' Operaciones         {result = OpSuma.new(val[0],val[2],'Suma:')}
+    | Operaciones '-' Operaciones         {result = OpResta.new(val[0],val[2],'Resta:')}
+    | Operaciones '/' Operaciones         {result = OpDivision.new(val[0],val[2],'Division:')}
+    | Operaciones '*' Operaciones         {result = OpMultiplication.new(val[0],val[2],'Multiplicacion:')}
+    | Operaciones 'mod' Operaciones       {result = OpMod.new(val[0],val[2],'Modulo:')}
+    | Operaciones 'div' Operaciones       {result = OpDiv.new(val[0],val[2],'Division:')}
+    | Operaciones '%' Operaciones         {result = OpModulo.new(val[0],val[2],'Modulo:')}
+    | Operaciones '>' Operaciones         {result = OpMayor.new(val[0],val[2],'Mayor Estricto:')}
+    | Operaciones '<' Operaciones         {result = OpMenor.new(val[0],val[2],'Menor Estricto:')}
+    | Operaciones '>=' Operaciones        {result = OpMayorIgual.new(val[0],val[2],'Mayor Igual:')}
+    | Operaciones '<=' Operaciones        {result = OpMenorIgual.new(val[0],val[2],'Menor Igual')}
+    | Operaciones'and' Operaciones        {result = OpAnd.new(val[0],val[2],'And:')}
+    | Operaciones'or' Operaciones         {result = OpOr.new(val[0],val[2],'Or:')}
+    | Operaciones'==' Operaciones         {result = OpIgual.new(val[0],val[2],'Equivalente:')}
+    | Operaciones'\=' Operaciones         {result = OpDistinto.new(val[0],val[2],'Distinto:')}
+    ;
 
-	Declaraciones: Declaracion ';' {result = val[0]}
-		| Declaracion ';' Declaraciones {result = BinaryOP.new(val[0],val[2])}
-		;
+  Declaracion: TipoDeDato Variables ';' {result = Declaracion_.new(val[0],val[1])}
+    | TipoDeDato Asignacion ';'        {result = Declaracion_.new(val[0],val[1])}
+    ;
 
-	Asignacion: Variables '=' Logica {result = OpAsignacion.new(val[0],val[2])}
-		| Variables '=' Aritmetica {result = OpAsignacion.new(val[0],val[2])}
-		;
+  Declaraciones: Declaracion     {result = val[0]}
+    | Declaracion Declaraciones {result = EnSerie.new(val[0],val[1])}
+    ;
 
-	FuncionesSinArg: 'home' {result = Palabra.new(val[0])}
-		| 'openeye' {result = Palabra.new(val[0])}
-		| 'closeeye' {result = Palabra.new(val[0])}
-		;
+  Asignacion: Variable '=' Operaciones {result = OpAsignacion.new(val[0],val[2],'Asignacion:')}
+    | Variable '=' LLamadaFunciones    {result = OpAsignacion.new(val[0],val[2],'Asignacion: ')}
+    ;
 
-	FuncionesUnArg: 'forward' {result = Palabra.new(val[0])}
-		|	'backward' {result = Palabra.new(val[0])}
-		| 'rotatel' {result = Palabra.new(val[0])}
-		| 'rotater' {result = Palabra.new(val[0])}
-		;
+  PalabrasReserv:'home'             {result = Palabra_.new(val[0])}
+    | 'openeye'                     {result = Palabra_.new(val[0])}
+    | 'closeeye'                    {result = Palabra_.new(val[0])}
+    | 'forward'                     {result = Palabra_.new(val[0])}
+    | 'backward'                    {result = Palabra_.new(val[0])}
+    | 'rotatel'                     {result = Palabra_.new(val[0])}
+    | 'rotater'                     {result = Palabra_.new(val[0])}
+    | 'setposition'                 {result = Palabra_.new(val[0])}
+    | 'arc'                         {result = Palabra_.new(val[0])}
+    ;
 
-	FuncionesDosArgs: 'setposition' {result = Palabra.new(val[0])}
-		| 'arc' {result = Palabra.new(val[0])}
-		;
+  Args: Operaciones
+    | Operaciones ',' Args          {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	LLamadaFunciones: Variables '(' ')' {result = LlamadaFuncion.new(val[0])}
-		| FuncionesSinArg '(' ')' {result = Funciones_.new(val[0],nil,nil)}
-		| FuncionesUnArg '(' Arg ')' {result = Funciones_.new(val[0],val[2],nil)}
-		| FuncionesDosArgs '(' Arg ',' Arg ')' {result = Funciones_.new(val[0],val[2],val[4])}
-		| Variables '(' Arg ')' {result = FuncionArg.new(val[0],val[2],nil)}
-		| Variables '(' Args ')' {result = FuncionArg.new(val[0],val[2],nil)}
-		;
+  LLamadaFunciones: Variable '(' ')' {result = LlamadaFunciones_.new(val[0],nil)}
+    | Variable '(' Args ')'         {result = LlamadaFunciones_.new(val[0],val[2])}
+    | PalabrasReserv '(' ')'        {result = LlamadaFunciones_.new(val[0],nil)}
+    | PalabrasReserv '(' Args ')'   {result = LlamadaFunciones_.new(val[0],val[2])}
+    ;
 
-	Arg: 
-		| Logica {result = Argumento.new(val[0])}
-		| Aritmetica {result = Argumento.new(val[0])}
-		;
+  ReturnElems: Operaciones {result = val[0]}
+    | LLamadaFunciones {result = val[1]}
+    | ReturnElems ',' Operaciones {result = EnSerie.new(val[0],val[2])}
+    | ReturnElems ',' LLamadaFunciones {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	Args: Arg {result = val[0]}
-		| Args ',' Arg{result = BinaryOP.new(val[0],val[2])}
-		;
+  Return: 'return' ReturnElems      {result = Return_.new(val[1])}
+    ;
 
-	PalabraFunc: 'func' {result = Palabra.new(val[0])};
+  Entrada: 'read' Variable {result = Entrada.new(val[1])}
+    ;
 
-	Instrucciones: LLamadaFunciones ';' {result = val[0]}
-		| Asignacion ';' {result = val[0]}
-		| Aritmetica ';' {result = val[0]}
-		| Logica ';' {result = val[0]}
-		| BloqueW ';' {result = val[0]}
-		| BloqueDo ';' {result = val[0]}
-		| Entrada ';' {result = val[0]}
-		| Salida ';' {result = val[0]}
-		| Instrucciones Instrucciones {result = Instruccion_.new(val[0],val[1])}
-		;
+  ElemSalida: String                {result = val[0]}
+    | Operaciones                   {result = val[0]}
+    | LLamadaFunciones              {result = val[0]}
+    ;
 
-	Argumento: Declaracion {result = val[0]}
-		| Declaracion ',' Argumento {result = BinaryOP.new(val[0],val[2])}
-		;
+  BloqSalida: ElemSalida            {result = val[0]}
+    | ElemSalida ',' BloqSalida     {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	Return: 'return' Aritmetica ';' {result = Return_.new(val[1])}
-		| 'return' LLamadaFunciones ';' {result = Return_.new(val[1])}
-		| 'return' Logica ';' {result = Return_.new(val[1])}
-		;
+  Salida: 'write' BloqSalida        {result = Salida_.new(val[1])}
+    | 'writeln' BloqSalida          {result = Salida_S.new(val[1])}
+    ;
 
-	DeclaracionFunciones: PalabraFunc Variables '(' Argumento ')' 'begin' Instrucciones 'end' ';' {result = Funcion_.new(val[0],val[1],val[3],val[6])}
-		| PalabraFunc Variables '(' ')' 'begin' Instrucciones 'end' ';' {result = Funcion_.new(val[0,val[1],nil,val[5]])}
-		| PalabraFunc Variables '(' Argumento ')' '->' TipoDeDato 'begin' Instrucciones Return 'end' ';' {result = Funcion_R.new(val[0],val[1],val[3],val[6],val[8],val[9])}
-		| PalabraFunc Variables '(' ')' '->' TipoDeDato 'begin' Instrucciones Return 'end' ';' {result = Funcion_R.new(val[0],val[1],nil,val[5],val[7],val[8])}
-		;
+  Bloque: 'with' Declaraciones 'do' Instrucciones 'end' {result = Bloque.new(val[1],val[3])}
+    | 'with' 'do' Instrucciones 'end'                   {result = Bloque.new(nil,val[2])}
 
-	BloqueDo: 'do' Instrucciones 'end' {result = Bloque.new(val[1],nil)}
-		;
+  Control:
+    | 'if' Operaciones 'then' Instrucciones 'end'       {result = Condicional.new(val[1],nil,val[3])}
+    | 'if' Operaciones 'then' Instrucciones 'else' Instrucciones 'end' {result = Condicional.new(val[1],val[3],val[5])}
+    | 'while' Operaciones 'do' Instrucciones 'end'      {result = IteracionIndeterminada.new(val[1],val[3])}
+    | 'for' Operaciones 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[7])}
+    | 'for' Operaciones 'from' Operaciones 'to' Operaciones 'by' Operaciones 'do' Instrucciones 'end' {result= IteracionDeterminada.new(val[1],val[3],val[5],val[7],val[9])}
+    | 'repeat' Operaciones 'times' Instrucciones 'end'  {result = IteracionDeterminadaRepeat.new(nil,nil,val[1],nil,val[3])}
+    ;
 
-	Numero: 'numero' {result = Num.new(val[0])}
-		;
+  Instruccion: LLamadaFunciones     {result = val[0]}#
+    | Asignacion                    {result = val[0]}#
+    | Operaciones                   {result = val[0]}#
+    | Bloque                        {result = val[0]}
+    | Control                       {result = val[0]}
+    | Entrada                       {result = val[0]}#
+    | Salida                        {result = val[0]}#
+    | Return                        {result = val[0]}#
 
-	BloqueW: 'with' Declaraciones BloqueDo {result = Bloque.new(val[1],val[2])}
-		| 'if' Logica 'then' Instrucciones 'end' {result = Condicional.new(val[1],val[3],nil)}
-		| 'if' Logica 'then' Instrucciones 'else' Instrucciones 'end' {result = Bloque.new(val[1],val[3],val[5])}
-		| 'while' Logica BloqueDo {result = Bloque.new(val[1],val[3])}
-		| 'for' Variables 'from' Numero 'to' Numero BloqueDo {result = Iteracion.new(val[1],val[3],val[5],val[6])}
-		| 'for' Variables 'from' Numero 'to' Numero Incremento BloqueDo {result= IteracionBy.new(val[1],val[3],val[5],val[8])}
-		| 'repeat' Numero 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
-		| 'repeat' Variables 'times' Instrucciones 'end' {result = Iteracion.new(val[1],val[3],nil,nil)}
-		;
+  Instrucciones: Instruccion ';'    {result = val[0]}
+    | Instruccion ';' Instrucciones {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	Incremento: 'by' Aritmetica {result= Incremento.new(val[1])}
-		;
+  Arg: TipoDeDato Variable {result = Declaracion_.new(val[0],val[1])}
+    ;
 
-	Entrada: 'read' Variables {result = Entrada.new(val[1])}
-		;
+  Argumento: Arg            {result = val[0]}
+    | Argumento ',' Arg     {result = EnSerie.new(val[0],val[2])}
+    ;
 
-	CadenaCarac: 'string' {result = String_.new(val[0])}
-		;
+  DeclaracionFuncion: 'func' Variable '(' Argumento ')' 'begin' Instrucciones 'end'  {result = Funcion_.new(val[1],val[3],nil,val[6])}
+    | 'func' Variable '(' ')' 'begin' Instrucciones 'end'                            {result = Funcion_.new(val[1],nil,nil,val[5])}
+    | 'func' Variable '(' Argumento ')' '->' TipoDeDato 'begin' Instrucciones 'end'  {result = Funcion_.new(val[1],val[3],val[6],val[8])}
+    | 'func' Variable '(' ')' '->' TipoDeDato 'begin' Instrucciones 'end'            {result = Funcion_.new(val[1],nil,val[5],val[7])}
+    ;
 
-	ElemSalida: CadenaCarac {result = val[0]}
-		| Logica {result = val[0]}
-		| Aritmetica {result = val[0]}
-		| LLamadaFunciones {result = val[0]}
-		;
+  DeclaracionFunciones: DeclaracionFuncion ';'      {result = val[0]}
+    | DeclaracionFunciones DeclaracionFuncion ';'   {result = EnSerie.new(val[0],val[1])}
+    ;
 
-	BloqSalida: ElemSalida {result = Salida_.new(val[0],nil)}
-		| ElemSalida ',' BloqSalida {result = Salida_.new(val[0],val[2])}
-		;
+  Program: 'program' Instrucciones 'end' ';'        {result = val[1]}
+    | 'program' 'end' ';'                           {result = nil}
+    ;
 
-	Salida: 'write' BloqSalida {result = val[1]}
-		| 'writeln' BloqSalida {result = val[1]}
-		;
-
-	Program: 'program' Instrucciones 'end' ';' {result = Programa.new(val[1])}
-		|
-		;
-
-	Retina:  DeclaracionFunciones Program {result = FinalRetina.new(val[0],val[1])}
-		| DeclaracionFunciones {result = FinalRetina.new(val[0],nil)}
-		| Program {result = FinalRetina.new(val[0],nil)}
-		;
+  Retina: DeclaracionFunciones Program      {result = Retina_.new(val[0],val[1])}
+    | Program                               {result = Retina_.new(nil,val[0])}
+    ;
 
 
 ---- header
@@ -244,34 +242,36 @@ class SyntacticError < RuntimeError
     end
 
     def to_s
-        "Syntactic error on: #{@token}"
+        "linea: #{@token.lin},columna: #{@token.col}: token inesperado: '#{@token.token}'"
     end
 end
 
 ---- inner
 begin
-def on_error(id, token, stack)
-    raise SyntacticError::new(token)
-end
+  attr_accessor :errors
 
-def next_token
-		if !@tokens.empty?
-	    token = @tokens[0]
-			@tokens = @tokens[1..@tokens.length]
-			#puts "#{token.class},#{token}"
-			return [token.class,token]
-		else
-    	return [false,false]
-		end
-end
+  def initialize
+    @errors = []
+  end
 
-def parse(tokens)
-    @yydebug = true
-    #@lexer = lexer
-    @tokens = tokens
-		#puts " #{@tokens}..."
-    ast = do_parse
-		#puts "#{ast} astast"
-    return ast
-end
+  def on_error(id, token, stack)
+      @errors << SyntacticError.new(token)
+  end
+
+  def next_token
+      if !@tokens.empty?
+        token = @tokens[0]
+        @tokens = @tokens[1..@tokens.length]
+        return [token.class,token]
+      else
+        return [false,false]
+      end
+  end
+
+  def parse(tokens)
+      @yydebug = true
+      @tokens = tokens
+      ast = do_parse
+      return ast
+  end
 end
