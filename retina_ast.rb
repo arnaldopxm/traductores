@@ -121,7 +121,7 @@ class Variables_ < AST
     if table.exist @digit
       return table.find @digit
     else
-      raise VariableNoDeclarada.new @digit, d.lin, d.col
+      raise VariableNoDeclarada.new @digit, @lin, @col
     end
   end
 end
