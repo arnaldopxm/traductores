@@ -39,7 +39,7 @@ class ErrorDeTipo < RuntimeError
   end
 
   def to_s
-    "Error: '#{@token}' es una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'. lin: #{@lin}, col: #{@col}"
+    "Error: '#{@token}' es una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'"
   end
 
   def Sustituir
