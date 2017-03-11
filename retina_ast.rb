@@ -627,12 +627,17 @@ class LlamadaFunciones_ < AST
   end
 
   def cantidadArgs name, table
+
     if ['home','openeye','closeeye'].include? name
       return [0,[]]
+
     elsif ['forward','backward','rotatel','rotater'].include? name
       return [1,[['x','number']]]
+
     elsif ['setposition','arc'].include? name
       return [2,[['x','number'],['y','number']]]
+
+    else
       i = 0
       x = []
       table.find(name).tabla.each do |a|
