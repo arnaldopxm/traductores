@@ -38,7 +38,7 @@ program
   for i from 10 to 100 do
     i = i + 1;
     while true do
-      i = 5;
+      i = true;
     end;
   end;
 

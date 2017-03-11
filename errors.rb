@@ -7,22 +7,26 @@ Autores:
 =end
 
 class VariableNoDeclarada < RuntimeError
-  def initialize tok
+  def initialize tok, lin, col
     @token = tok
+    @lin = lin
+    @col = col
   end
 
   def to_s
-    "Error: variable no declarada '#{@token}'"
+    "Error: variable no declarada '#{@token}'. lin: #{@lin}, col: #{@col}"
   end
 end
 
 class FuncionNoDeclarada < RuntimeError
-  def initialize tok
+  def initialize tok, lin, col
     @token = tok
+    @lin = lin
+    @col = col
   end
 
   def to_s
-    "Error: funcion no declarada '#{@token}'"
+    "Error: funcion no declarada '#{@token}'. lin: #{@lin}, col: #{@col}"
   end
 end
 
@@ -35,7 +39,7 @@ class ErrorDeTipo < RuntimeError
   end
 
   def to_s
-    "Error: '#{@token}' es una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'"
+    "Error: '#{@token}' es una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'. lin: #{@lin}, col: #{@col}"
   end
 
   def Sustituir

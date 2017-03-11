@@ -104,10 +104,12 @@ class False_ < Bools_;end
 
 # Variables
 class Variables_ < AST
-  attr_accessor :digit
+  attr_accessor :digit, :lin, :col
 
   def initialize d
       @digit = d.token
+      @lin = d.lin
+      @col = d.col
   end
 
   def print_ast indent=""
@@ -119,7 +121,7 @@ class Variables_ < AST
     if table.exist @digit
       return table.find @digit
     else
-      raise VariableNoDeclarada.new @digit
+      raise VariableNoDeclarada.new @digit, d.lin, d.col
     end
   end
 end
@@ -196,7 +198,7 @@ class UnaryMenos < UnaryOP
           return ['number',"-#{@operand.digit}"]
         end
       else
-        raise VariableNoDeclarada.new @operand.digit
+        raise VariableNoDeclarada.new @operand.digit, @operand.lin, @operand.col
       end
 
     elsif @operand.class < OpAritmetico_
@@ -231,7 +233,7 @@ class UnaryNot < UnaryOP
           return ['boolean',"not #{@operand.digit}"]
         end
       else
-        raise VariableNoDeclarada.new @operand.digit
+        raise VariableNoDeclarada.new @operand.digit, @operand.lin, @operand.col
       end
 
     elsif @operand.class < OpComparacion_ or @operand.class < OpLogico_
@@ -301,7 +303,7 @@ class OpAritmetico_ < BinaryOP
           return ['number',left.digit]
         end
       else
-        raise VariableNoDeclarada.new left.digit
+        raise VariableNoDeclarada.new left.digit, left.lin, left.col
       end
 
     elsif left.class == Numero_
@@ -358,7 +360,7 @@ class OpComparacion_ < BinaryOP
           return ['number',left.digit]
         end
       else
-        raise VariableNoDeclarada.new left.digit
+        raise VariableNoDeclarada.new left.digit, left.lin, left.col
       end
 
     elsif left.class == UnaryMenos
@@ -415,7 +417,7 @@ class OpLogico_ < BinaryOP
           return ['boolean',left.digit]
         end
       else
-        raise VariableNoDeclarada.new left.digit
+        raise VariableNoDeclarada.new left.digit, left.lin, left.col
       end
 
     elsif left.class < Bools_
@@ -439,7 +441,7 @@ class OpAsignacion < BinaryOP
 
   def check table
     if  !table.exist @left.digit
-      raise VariableNoDeclarada.new @left.digit
+      raise VariableNoDeclarada.new @left.digit, @left.lin, @left.col
     end
 
     esp = table.find @left.digit
@@ -456,7 +458,7 @@ class OpAsignacion < BinaryOP
       if table.exist @right.digit
         act = table.find tok
       else
-        raise VariableNoDeclarada.new @right.digit
+        raise VariableNoDeclarada.new @right.digit, @right.lin, @right.col
       end
 
 
@@ -509,14 +511,19 @@ class Declaracion_ < AST
       @ident.print_ast indent + '    '
   end
 
-  ##################
   def check table
     #puts "#{table},#{table.attrs}"
-    if table.exist @ident.digit and !table.exist('s_$__')
-      raise ErrorExistencia.new @ident.digit
+    if @ident.class != OpAsignacion
+      if table.exist @ident.digit and !table.exist('s_$__')
+        raise ErrorExistencia.new @ident.digit
+      else
+        table.remove 's_$__' if table.exist('s_$__')
+        table.insert @ident.digit, @tipo.digit
+      end
     else
-      table.remove 's_$__' if table.exist('s_$__')
-      table.insert @ident.digit, @tipo.digit
+      x = @ident.right.check table
+      x = x[0] if x.class == Array
+      table.insert @ident.left.digit, x
     end
     return table
   end
@@ -567,13 +574,14 @@ class LlamadaFunciones_ < AST
       ident = @name.digit
       e = table.exist ident
       if !e
-        raise FuncionNoDeclarada.new @name.digit
+        raise FuncionNoDeclarada.new @name.digit, @name.lin, @name.col
       end
     end
 
     x = cantidadArgs ident, table
     cant = x[0]
-    act = argsActuales @args
+    act = 0
+    act = argsActuales @args if !args.nil?
     #puts "#{act}, #{cant}"
     #puts x[1]
 
@@ -581,7 +589,7 @@ class LlamadaFunciones_ < AST
       raise ErrorCantArgumentos.new ident, cant, act
     else
       ###
-      checkTypes @args, table, cant, ident, reserv, x[1]
+      checkTypes @args, table, cant, ident, reserv, x[1] if act!=0
       if table.exist 'ret_$__'
         return [table.find('ret_$__'),ident]
       else
@@ -620,7 +628,8 @@ class LlamadaFunciones_ < AST
       if reserv
         raise ErrorDeTipo.new args.digit,t,'number' if t != 'number'
       else
-        raise ErrorDeTipo.new args.digit,t,array[0][1] if t != array[0][1]
+        #puts t
+        raise ErrorDeTipo.new args.digit,t[0],array[0][1] if t[0] != array[0][1]
       end
 
     else
@@ -653,12 +662,16 @@ class LlamadaFunciones_ < AST
 
   def cantidadArgs name, table
     if ['home','openeye','closeeye'].include? name
-      return 0
+      #puts 0
+      return [0,[]]
     elsif ['forward','backward','rotatel','rotater'].include? name
-      return 1
+      #puts 1
+      return [1,[['x','number']]]
     elsif ['setposition','arc'].include? name
-      return 2
+      #puts 2
+      return [2,[['x','number'],['y','number']]]
     else
+      #puts 'c'
       i = 0
       x = []
       table.find(name).tabla.each do |a|
@@ -734,7 +747,7 @@ class Entrada < Singleton
 
   def check table
     if ! table.exist @operand.digit
-      raise VariableNoDeclarada.new @operand.digit
+      raise VariableNoDeclarada.new @operand.digit, @operand.lin, @operand.col
     end
   end
 end
@@ -856,7 +869,7 @@ class Condicional < AST
     elsif cond.class<=Variables_
       x= cond.check table
       if x==nil
-        raise VariableNoDeclarada.new cond.digit
+        raise VariableNoDeclarada.new cond.digit, cond.lin, cond.col
       end
     else
       raise ErrorDeTipo.new 'El argumento del If' , cond.class,'Operacion Comparacion'
@@ -894,7 +907,7 @@ class IteracionIndeterminada < AST
   def check_exp table
     x=@exp.check table
     if x==nil
-      raise VariableNoDeclarada.new @exp.digit
+      raise VariableNoDeclarada.new @exp.digit, @exp.lin, @exp.col
     end
 
     if [True_,False_,Variables_].include? @exp.class or @exp.class<OpLogico_ or @exp.class<OpComparacion_
@@ -979,7 +992,7 @@ class IteracionDeterminada < AST
     elsif inter.class<=Variables_
       x = inter.check table
       if x==nil
-        raise VariableNoDeclarada.new inter.digit
+        raise VariableNoDeclarada.new inter.digit, inter.lin, inter.col
       end
 
       if x != 'number'
@@ -1002,7 +1015,7 @@ class IteracionDeterminada < AST
       table.insert @var.digit,'number'
       x = @var.check table
       if x == nil
-        raise VariableNoDeclarada.new @var.digit
+        raise VariableNoDeclarada.new @var.digit, @var.lin, @var.col
       end
 
       if x != 'number'
@@ -1049,7 +1062,7 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
     elsif inter.class<=Variables_
       x = inter.check table
       if x==nil
-        raise VariableNoDeclarada.new inter.digit
+        raise VariableNoDeclarada.new inter.digit, inter.lin, inter.col
       end
 
       if x != 'number'
@@ -1136,11 +1149,10 @@ class Retina_ < AST
 
   def check
     table = TablasDeAlcance.new nil
-    insertar_base table
     @dec.check table if @dec.respond_to? :check
     tableProg = TablasDeAlcance.new table
     table.insert 'program' , tableProg
-
+    insertar_base table
     @inst.check tableProg
 
     #table.insert 'declaraciones', @dec.check table if @dec.respond_to? :check
