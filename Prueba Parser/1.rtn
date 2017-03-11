@@ -12,6 +12,12 @@ begin
   x = x+5;
 end;
 
+func asbdf(number x,boolean y,number z) -> boolean
+begin
+  x = x+5;
+  return true;
+end;
+
 program
   with
       number i;
