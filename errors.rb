@@ -120,3 +120,9 @@ class ErrorDeTipoArg < ErrorDeTipo
     "Error: '#{@token}' contiene una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'"
   end
 end
+
+class DivisionPorCero < RuntimeError
+  def to_s
+    "Error: Division por cero"
+  end
+end

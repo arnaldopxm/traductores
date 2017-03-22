@@ -1,0 +1,13 @@
+program
+  #0.25
+  #(((2*3+5/2) / 2) mod 1 == 0.25) or false;
+  #(2*3+6 div 5) /= 7 or true;
+  #true and true;
+   #true and false;
+   #false and true;
+  # false and false;
+   true or true;
+   true or false;
+   false or true;
+ false or false;
+end;

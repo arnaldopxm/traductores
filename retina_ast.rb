@@ -45,6 +45,11 @@ class EnSerie < AST
     @arg0.check table
     @arg1.check table
   end
+
+  def run
+    @arg0.run
+    @arg1.run
+  end
 end
 
 
@@ -123,6 +128,9 @@ class Variables_ < AST
     else
       raise VariableNoDeclarada.new @digit, @lin, @col
     end
+  end
+
+  def run
   end
 end
 
@@ -312,13 +320,162 @@ class OpAritmetico_ < BinaryOP
   end
 end
 
-class OpSuma < OpAritmetico_;end
-class OpResta < OpAritmetico_;end
-class OpMultiplication < OpAritmetico_;end
-class OpDivision < OpAritmetico_;end
-class OpDiv < OpAritmetico_;end
-class OpModulo < OpAritmetico_;end
-class OpMod < OpAritmetico_;end
+class OpSuma < OpAritmetico_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left + right
+    return left + right
+  end
+end
+
+class OpResta < OpAritmetico_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left - right
+    return left - right
+  end
+end
+
+class OpMultiplication < OpAritmetico_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left * right
+    return left * right
+  end
+end
+
+class OpDivision < OpAritmetico_
+  def run
+
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      puts left / right
+      return left / right
+    rescue ZeroDivisionError
+      raise DivisionPorCero.new
+    end
+
+  end
+end
+
+class OpDiv < OpAritmetico_
+  def run
+
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Integer(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Integer(@right.digit)
+    end
+
+    begin
+      puts left / right
+      return left / right
+    rescue ZeroDivisionError
+      raise DivisionPorCero.new
+    end
+
+  end
+end
+
+class OpModulo < OpAritmetico_
+  def run
+
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      puts left % right
+      return left % right
+    rescue ZeroDivisionError
+      raise DivisionPorCero.new
+    end
+
+  end
+end
+
+class OpMod < OpAritmetico_
+  def run
+
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Integer(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Integer(@right.digit)
+    end
+
+    begin
+      puts left % right
+      return left % right
+    rescue ZeroDivisionError
+      raise DivisionPorCero.new
+    end
+
+  end
+end
 
 class OpComparacion_ < BinaryOP
   def check table
@@ -364,12 +521,119 @@ class OpComparacion_ < BinaryOP
   end
 end
 
-class OpMayor < OpComparacion_;end
-class OpMenor < OpComparacion_;end
-class OpMayorIgual < OpComparacion_;end
-class OpMenorIgual < OpComparacion_;end
-class OpIgual < OpComparacion_;end
-class OpDistinto < OpComparacion_;end
+class OpMayor < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left > right
+    return left > right
+  end
+end
+
+class OpMenor < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left < right
+    return left < right
+  end
+end
+
+class OpMayorIgual < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left >= right
+    return left >= right
+  end
+end
+
+class OpMenorIgual < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left <= right
+    return left <= right
+  end
+end
+
+class OpIgual < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left == right
+    return left == right
+  end
+end
+
+class OpDistinto < OpComparacion_
+  def run
+    if @left.class != Numero_
+      left = @left.run
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run
+    else
+      right = Float(@right.digit)
+    end
+
+    puts left != right
+    return left != right
+  end
+end
 
 class OpLogico_ < BinaryOP
   def check table
@@ -415,8 +679,53 @@ class OpLogico_ < BinaryOP
   end
 end
 
-class OpAnd < OpLogico_;end
-class OpOr < OpLogico_;end
+class OpAnd < OpLogico_
+  def run
+    if @left.class == True_
+      left = true
+    elsif @left.class == False_
+      left = false
+    else
+      left  = @left.run
+    end
+
+    if @right.class == True_
+      right = true
+    elsif @right.class == False_
+      right = false
+    else
+      right  = @right.run
+    end
+
+    res = (left and right)
+    puts res
+    return res
+  end
+end
+
+class OpOr < OpLogico_
+  def run
+    if @left.class == True_
+      left = true
+    elsif @left.class == False_
+      left = false
+    else
+      left  = @left.run
+    end
+
+    if @right.class == True_
+      right = true
+    elsif @right.class == False_
+      right = false
+    else
+      right  = @right.run
+    end
+
+    res = (left or right)
+    puts res
+    return res
+  end
+end
 
 class OpAsignacion < BinaryOP
 
@@ -1102,6 +1411,10 @@ class Retina_ < AST
 
     table.to_s
     return table
+  end
+
+  def run
+    @inst.run
   end
 
   def insertar_base padre
