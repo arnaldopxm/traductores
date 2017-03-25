@@ -130,8 +130,12 @@ class Variables_ < AST
     end
   end
 
-  def run
+  def run table
+    rt=table.find @digit
+    rt=rt[1]
+    return rt
   end
+
 end
 
 # Strings
@@ -728,11 +732,10 @@ class OpOr < OpLogico_
 end
 
 class OpAsignacion < BinaryOP
-=begin
-  def run
-    arr.each{|item| item[@left.digit] = right.run
-    return @left.digit=right.run
-=end
+
+  def run table
+      table.modify @left.digit @right.run
+  end
 
   def check table
     if  !table.exist @left.digit
@@ -1045,13 +1048,9 @@ end
 
 # Salida
 class Salida_ < Singleton
-=begin
   def run
     print @operand
-
-=end
-  
-end
+  end
   def print_ast indent=""
       puts "#{indent}Salida:"
       puts "#{indent + '  '}expresiones:"
@@ -1067,11 +1066,11 @@ end
 end
 
 class Salida_S < Singleton
-=begin
+
   def run
     puts @operand
+  end
 
-=end
   def print_ast indent=""
       puts "#{indent}Salida con Salto:"
       puts "#{indent + '  '}expresiones:"
@@ -1101,6 +1100,12 @@ class Bloque < AST
       puts "#{indent + '  '}instrucciones:"
       @ins.print_ast indent + '    ' if @ins.respond_to? :print_ast
   end
+
+  def run
+    @dec.run
+    @ins.run
+  end
+
 
   def check table
     t = TablasDeAlcance.new table
@@ -1143,6 +1148,20 @@ class Condicional < AST
       puts "#{indent + '  '}instrucciones:"
       @bloq.print_ast indent + '    '
   end
+  def run
+    if(@cond0.run)
+      rt=@bloq.run
+      puts rt
+      return rt
+    else
+      #pongo el print para verificar si existe una condicion else.
+      if @cond1.respond_to? :print_ast
+        rt=@cond1.run
+        puts rt
+        return rt
+      end
+    end
+  end
 
   def check table
     self.check_cond table,@cond0
@@ -1171,11 +1190,16 @@ class Condicional < AST
   def check_Bloq table, bloq
     bloq.check table
   end
-
 end
 
 class IteracionIndeterminada < AST
   attr_accessor :exp,:bloque
+
+  def run
+      while(@exp.run)
+        @bloque.run
+      end
+  end
 
   def initialize e, b
       @exp = e
@@ -1193,7 +1217,6 @@ class IteracionIndeterminada < AST
   def check table
     self.check_exp table
     self.check_Bloq table
-
   end
 
   def check_exp table
@@ -1214,12 +1237,26 @@ class IteracionIndeterminada < AST
   def check_Bloq table
     @bloque.check table
   end
-
-
 end
 
 class IteracionDeterminada < AST
   attr_accessor :var, :desde, :hasta, :incremento ,:bloque
+
+  def run table
+     #consigo el simbolo de la variable
+     x=@var.digit
+     l1=@desde.run
+     l2=@hasta.run
+     if @incremento==nil by=1
+     else by=@incremento.run end
+
+     while l1<=l2
+      #Actualizo la tabla con el valor que me da el for.
+      table.modify x.digit l1
+      @bloque.run
+      l1+=by
+     end
+  end
 
   def initialize v, d, h, i, b
       @var = v
@@ -1324,6 +1361,19 @@ class IteracionDeterminada < AST
 end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
+
+  def run table
+     sentinela=0
+     l2=@hasta.run
+     by=1
+     else by=@incremento.run end
+
+     while sentila<hasta
+      @bloque.run
+      sentila+=1
+     end
+  end
+
 
   def print_ast indent=""
     puts "#{indent}Iteracion Determinada: "
@@ -1542,4 +1592,9 @@ class TablasDeAlcance
   def remove value
     @tabla.delete(value)
   end
+
+  def modify element, value
+    @tabla[element][1]=value
+  end
+
 end
