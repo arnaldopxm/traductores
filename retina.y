@@ -182,9 +182,12 @@ rule
 
   Bloque: 'with' Declaraciones 'do' Instrucciones 'end' {result = Bloque.new(val[1],val[3])}
     | 'with' 'do' Instrucciones 'end'                   {result = Bloque.new(nil,val[2])}
+    | 'with' 'do' 'end'                                 {result = Bloque.new(nil,nil)}
+    ;
 
   Control:
     | 'if' Operaciones 'then' Instrucciones 'end'       {result = Condicional.new(val[1],nil,val[3])}
+    | 'if' 'then' 'end'                                 {result = Condicional.new(nil,nil,nil)}
     | 'if' Operaciones 'then' Instrucciones 'else' Instrucciones 'end' {result = Condicional.new(val[1],val[3],val[5])}
     | 'while' Operaciones 'do' Instrucciones 'end'      {result = IteracionIndeterminada.new(val[1],val[3])}
     | 'for' Operaciones 'from' Operaciones 'to' Operaciones 'do' Instrucciones 'end' {result = IteracionDeterminada.new(val[1],val[3],val[5],nil,val[7])}

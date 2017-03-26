@@ -44,9 +44,9 @@ def main
       begin
         x =  ast.check
         x.print_
-        ast.run
-      rescue RuntimeError => e
-        puts e
+        ast.run x
+      #rescue RuntimeError => e
+        #puts e
       end
     end
   end

@@ -46,9 +46,9 @@ class EnSerie < AST
     @arg1.check table
   end
 
-  def run
-    @arg0.run
-    @arg1.run
+  def run table
+    @arg0.run table
+    @arg1.run table
   end
 end
 
@@ -59,6 +59,7 @@ class Singleton < AST
 
     def initialize operand
         @operand = operand
+        @table = nil
     end
 
     def print_ast indent=""
@@ -74,6 +75,7 @@ class Numero_ < AST
 
     def initialize d
         @digit = d.token
+        @table = nil
     end
 
     def print_ast indent=""
@@ -84,6 +86,10 @@ class Numero_ < AST
     def check table
       return ['number',@digit]
     end
+
+    def run table
+      return Integer(Float(@digit))
+    end
 end
 
 # Booleanos
@@ -92,6 +98,7 @@ class Bools_ < AST
 
     def initialize d
         @digit = d.token
+        @table = nil
     end
 
     def print_ast indent=""
@@ -100,12 +107,21 @@ class Bools_ < AST
     end
 
     def check table
+      @table = table
       return ['boolean',@digit]
     end
 end
 
-class True_ < Bools_;end
-class False_ < Bools_;end
+class True_ < Bools_
+  def run table
+    return true
+  end
+end
+class False_ < Bools_
+  def run table
+    return false
+  end
+end
 
 # Variables
 class Variables_ < AST
@@ -115,6 +131,7 @@ class Variables_ < AST
       @digit = d.token
       @lin = d.lin
       @col = d.col
+      @table = nil
   end
 
   def print_ast indent=""
@@ -123,6 +140,7 @@ class Variables_ < AST
   end
 
   def check table
+    @table = table
     if table.exist @digit
       return table.find @digit
     else
@@ -130,8 +148,12 @@ class Variables_ < AST
     end
   end
 
-  def run
+  def run table
+    rt=table.find @digit
+    rt=rt[1]
+    return rt
   end
+
 end
 
 # Strings
@@ -140,6 +162,7 @@ class String_< AST
 
   def initialize val
     @val = val
+    @table = nil
   end
 
   def print_ast indent=""
@@ -148,7 +171,12 @@ class String_< AST
   end
 
   def check table
+    @table = table
     return ['string',@val]
+  end
+
+  def run table
+    return @val.token
   end
 end
 
@@ -158,6 +186,7 @@ class TipoDato_ < AST
 
   def initialize d
       @digit = d.token
+      @table = nil
   end
 
   def print_ast indent=""
@@ -175,6 +204,7 @@ class UnaryOP < AST
 
     def initialize operand
         @operand = operand
+        @table = nil
     end
 
     def print_ast indent=""
@@ -197,6 +227,7 @@ class UnaryMenos < UnaryOP
 
   def check table
 
+    @table = table
     if @operand.class == Variables_
 
       if table.exist @operand.digit
@@ -219,6 +250,10 @@ class UnaryMenos < UnaryOP
       raise ErrorDeOperador.new @operand.digit, 'boolean', 'number', 'Menos Unario'
     end
   end
+
+  def run table
+    return -(@operand.run @table)
+  end
 end
 
 class UnaryNot < UnaryOP
@@ -232,10 +267,11 @@ class UnaryNot < UnaryOP
 
   def check table
 
+    @table = table
     if @operand.class == Variables_
       if table.exist @operand.digit
-        if @operand.check(table) != 'boolean'
-          raise ErrorDeTipo.new @operand.digit,@operand.check(table),'boolean'
+        if @operand.check(table)[0] != 'boolean'
+          raise ErrorDeTipo.new @operand.digit,@operand.check(table)[0],'boolean'
         else
           return ['boolean',"not #{@operand.digit}"]
         end
@@ -254,6 +290,10 @@ class UnaryNot < UnaryOP
 
     end
   end
+
+  def run table
+    return ! @operand.run(@table)
+  end
 end
 
 # Operadores Binarios
@@ -264,6 +304,7 @@ class BinaryOP < AST
       @left = lh
       @right = rh
       @name = name
+      @table = nil
   end
 
   def print_ast indent=""
@@ -280,6 +321,7 @@ class OpAritmetico_ < BinaryOP
   def check table
     x = self.check_ table, @left
     y = self.check_ table, @right
+    @table = table
     if x
       return x
     else
@@ -298,8 +340,8 @@ class OpAritmetico_ < BinaryOP
 
     elsif left.class == Variables_
       if table.exist left.digit
-        if left.check(table) != 'number'
-          raise ErrorDeTipo.new left.digit,left.check(table),'number'
+        if left.check(table)[0] != 'number'
+          raise ErrorDeTipo.new left.digit,left.check(table)[0],'number'
         else
           return ['number',left.digit]
         end
@@ -321,157 +363,181 @@ class OpAritmetico_ < BinaryOP
 end
 
 class OpSuma < OpAritmetico_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
-    else
-      right = Float(@right.digit)
-    end
-
-    puts left + right
-    return left + right
-  end
-end
-
-class OpResta < OpAritmetico_
-  def run
-    if @left.class != Numero_
-      left = @left.run
-    else
-      left = Float(@left.digit)
-    end
-
-    if @right.class != Numero_
-      right = @right.run
-    else
-      right = Float(@right.digit)
-    end
-
-    puts left - right
-    return left - right
-  end
-end
-
-class OpMultiplication < OpAritmetico_
-  def run
-    if @left.class != Numero_
-      left = @left.run
-    else
-      left = Float(@left.digit)
-    end
-
-    if @right.class != Numero_
-      right = @right.run
-    else
-      right = Float(@right.digit)
-    end
-
-    puts left * right
-    return left * right
-  end
-end
-
-class OpDivision < OpAritmetico_
-  def run
-
-    if @left.class != Numero_
-      left = @left.run
-    else
-      left = Float(@left.digit)
-    end
-
-    if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
     begin
-      puts left / right
-      return left / right
-    rescue ZeroDivisionError
+      # puts left + right
+      return left + right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
+  end
+end
+
+class OpResta < OpAritmetico_
+  def run table
+    if @left.class != Numero_
+      left = @left.run @table
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run @table
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      # puts left - right
+      return left - right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
+  end
+end
+
+class OpMultiplication < OpAritmetico_
+  def run table
+    if @left.class != Numero_
+      left = @left.run @table
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run @table
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      # puts left * right
+      return left * right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
+  end
+end
+
+class OpDivision < OpAritmetico_
+  def run table
+
+    if @left.class != Numero_
+      left = @left.run @table
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run @table
+    else
+      right = Float(@right.digit)
+    end
+
+    if right.zero?
       raise DivisionPorCero.new
+    end
+
+    begin
+      # puts left / right
+      return left / right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
     end
 
   end
 end
 
 class OpDiv < OpAritmetico_
-  def run
+  def run table
 
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
-      left = Integer(@left.digit)
+      left = Integer(Float(@left.digit))
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
-      right = Integer(@right.digit)
+      right = Integer(Float(@right.digit))
     end
 
     begin
-      puts left / right
+      # puts left / right
       return left / right
     rescue ZeroDivisionError
       raise DivisionPorCero.new
+    rescue NoMethodError
+      raise VariableNoInicializada.new
     end
 
   end
 end
 
 class OpModulo < OpAritmetico_
-  def run
+  def run table
 
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    begin
-      puts left % right
-      return left % right
-    rescue ZeroDivisionError
+    if right.zero?
       raise DivisionPorCero.new
+    end
+
+    begin
+      # puts left % right
+      return left % right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
     end
 
   end
 end
 
 class OpMod < OpAritmetico_
-  def run
+  def run table
 
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
-      left = Integer(@left.digit)
+      left = Integer(Float(@left.digit))
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
-      right = Integer(@right.digit)
+      right = Integer(Float(@right.digit))
     end
 
     begin
-      puts left % right
+      # puts left % right
       return left % right
     rescue ZeroDivisionError
       raise DivisionPorCero.new
+    rescue NoMethodError
+      raise VariableNoInicializada.new
     end
 
   end
@@ -481,6 +547,7 @@ class OpComparacion_ < BinaryOP
   def check table
     x = self.check_ table, @left
     y = self.check_ table, @right
+    @table = table
     if x[0] == 'number' and y[0] == 'number'
       z = ['boolean',x[1]+y[1]]
       return z
@@ -498,8 +565,8 @@ class OpComparacion_ < BinaryOP
 
     elsif left.class == Variables_
       if table.exist left.digit
-        if left.check(table) != 'number'
-          raise ErrorDeTipo.new left.digit,left.check(table),'number'
+        if left.check(table)[0] != 'number'
+          raise ErrorDeTipo.new left.digit,left.check(table)[0],'number'
         else
           return ['number',left.digit]
         end
@@ -522,116 +589,140 @@ class OpComparacion_ < BinaryOP
 end
 
 class OpMayor < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left > right
-    return left > right
+    begin
+      # puts left > right
+      return left > right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpMenor < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left < right
-    return left < right
+    begin
+      # puts left < right
+      return left < right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpMayorIgual < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left >= right
-    return left >= right
+    begin
+      # puts left >= right
+      return left >= right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpMenorIgual < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left <= right
-    return left <= right
+    begin
+      # puts left <= right
+      return left <= right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpIgual < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left == right
-    return left == right
+    begin
+      # puts left == right
+      return left == right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpDistinto < OpComparacion_
-  def run
+  def run table
     if @left.class != Numero_
-      left = @left.run
+      left = @left.run @table
     else
       left = Float(@left.digit)
     end
 
     if @right.class != Numero_
-      right = @right.run
+      right = @right.run @table
     else
       right = Float(@right.digit)
     end
 
-    puts left != right
-    return left != right
+    begin
+      # puts left != right
+      return left != right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
@@ -639,6 +730,7 @@ class OpLogico_ < BinaryOP
   def check table
     x = self.check_ table, @left
     y = self.check_ table, @right
+    @table = table
     if x
       return x
     else
@@ -657,8 +749,8 @@ class OpLogico_ < BinaryOP
 
     elsif left.class == Variables_
       if table.exist left.digit
-        if left.check(table) != 'boolean'
-          raise ErrorDeTipo.new left.digit,left.check(table),'boolean'
+        if left.check(table)[0] != 'boolean'
+          raise ErrorDeTipo.new left.digit,left.check(table)[0],'boolean'
         else
           return ['boolean',left.digit]
         end
@@ -680,13 +772,13 @@ class OpLogico_ < BinaryOP
 end
 
 class OpAnd < OpLogico_
-  def run
+  def run table
     if @left.class == True_
       left = true
     elsif @left.class == False_
       left = false
     else
-      left  = @left.run
+      left  = @left.run @table
     end
 
     if @right.class == True_
@@ -694,23 +786,27 @@ class OpAnd < OpLogico_
     elsif @right.class == False_
       right = false
     else
-      right  = @right.run
+      right  = @right.run @table
     end
 
-    res = (left and right)
-    puts res
-    return res
+    begin
+      res = (left and right)
+      # puts res
+      return res
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpOr < OpLogico_
-  def run
+  def run table
     if @left.class == True_
       left = true
     elsif @left.class == False_
       left = false
     else
-      left  = @left.run
+      left  = @left.run @table
     end
 
     if @right.class == True_
@@ -718,33 +814,50 @@ class OpOr < OpLogico_
     elsif @right.class == False_
       right = false
     else
-      right  = @right.run
+      right  = @right.run @table
     end
 
-    res = (left or right)
-    puts res
-    return res
+    begin
+      res = (left or right)
+      # puts res
+      return res
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
   end
 end
 
 class OpAsignacion < BinaryOP
 
+  def run table
+    # puts"...."
+    # puts table
+    # puts "...."
+    x = @right.run @table
+    if x.nil?
+      raise VariableNoInicializada.new
+    end
+    table.modify @left.digit, x
+  end
+
   def check table
+    @table = table
     if  !table.exist @left.digit
       raise VariableNoDeclarada.new @left.digit, @left.lin, @left.col
     end
 
     esp = table.find @left.digit
+    esp = esp[0]
 
     if @right.class < UnaryOP
       x = @right.check table
-      act = x[0]
+      act = x[0][0]
       tok = x[1]
 
     elsif @right.class == Variables_
       tok = @right.digit
       if table.exist @right.digit
-        act = table.find tok
+        act = table.find(tok)[0]
       else
         raise VariableNoDeclarada.new @right.digit, @right.lin, @right.col
       end
@@ -760,7 +873,7 @@ class OpAsignacion < BinaryOP
 
     elsif @right.class == LlamadaFunciones_
       x = @right.check table
-      act = x[0]
+      act = x[0][0]
       tok = x[1]
 
     else
@@ -786,9 +899,10 @@ class Declaracion_ < AST
   def initialize t,i
     @tipo = t
     @ident = i
+    @table = nil
   end
 
-   def print_ast indent=""
+  def print_ast indent=""
       puts "#{indent}Declaracion:"
       puts "#{indent + '  '}tipo:"
       @tipo.print_ast indent + '    '
@@ -802,15 +916,21 @@ class Declaracion_ < AST
         raise ErrorExistencia.new @ident.digit
       else
         table.remove 's_$__' if table.exist('s_$__')
-        table.insert @ident.digit, @tipo.digit
+        table.insert @ident.digit, [@tipo.digit,nil]
       end
     else
       x = @ident.right.check table
       x = x[0] if x.class == Array
-      table.insert @ident.left.digit, x
+      table.insert @ident.left.digit, [x,nil]
     end
+    @table = table
     return table
   end
+
+  def run table
+    @ident.run(@table)
+  end
+
 end
 
 # Palabras Reservadas
@@ -820,6 +940,7 @@ class Palabra_ < AST
 
   def initialize d
       @nombre = d.token
+      @table = nil
   end
 
   def print_ast indent=""
@@ -828,6 +949,7 @@ class Palabra_ < AST
   end
 
   def check table
+    @table = table
     return ['palabra_reser',@nombre]
   end
 end
@@ -839,6 +961,7 @@ class LlamadaFunciones_ < AST
   def initialize name,arg
     @name=name
     @args=arg
+    @table = nil
   end
 
   def print_ast indent=""
@@ -870,6 +993,7 @@ class LlamadaFunciones_ < AST
     if act != cant
       raise ErrorCantArgumentos.new ident, cant, act
     else
+      @table = table
       checkTypes @args, table, cant, ident, reserv, x[1] if act!=0
       if table.exist 'ret_$__'
         return [table.find('ret_$__'),ident]
@@ -913,7 +1037,7 @@ class LlamadaFunciones_ < AST
     else
       z = recursive args, table
       for i in 0..cant-1
-        raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1] if array[i][1] != z[i][0]
+        raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1][0] != z[i][0]
       end
     end
 
@@ -950,12 +1074,23 @@ class LlamadaFunciones_ < AST
       i = 0
       x = []
       table.find(name).tabla.each do |a|
-        if ['ret_$__','has_$_r$_'].include? a[0]
-        elsif ! ['boolean','number'].include? a[1]
+        if(a[1].class==TablasDeAlcance)
+
+          if ['ret_$__','has_$_r$_'].include? a[0]
+          elsif ! ['boolean','number'].include? a[1]
+          else
+            i = i+1
+            x << a
+          end
         else
-          i = i+1
-          x << a
+          if ['ret_$__','has_$_r$_'].include? a[0]
+          elsif ! ['boolean','number'].include? a[1][0]
+          else
+            i = i+1
+            x << a
+          end
         end
+
       end
       return [i,x]
     end
@@ -997,6 +1132,7 @@ class Return_ < Singleton
             x.insert 'has_$_r$_', true
           end
 
+          @table = table
           return [retType,@operand]
         end
       end
@@ -1020,6 +1156,7 @@ class Entrada < Singleton
   end
 
   def check table
+    @table = table
     if ! table.exist @operand.digit
       raise VariableNoDeclarada.new @operand.digit, @operand.lin, @operand.col
     end
@@ -1028,7 +1165,9 @@ end
 
 # Salida
 class Salida_ < Singleton
-
+  def run table
+    print @operand.run @table
+  end
   def print_ast indent=""
       puts "#{indent}Salida:"
       puts "#{indent + '  '}expresiones:"
@@ -1038,12 +1177,18 @@ class Salida_ < Singleton
   end
 
   def check table
+    @table = table
     return @operand.check table
   end
 
 end
 
 class Salida_S < Singleton
+
+  def run table
+    puts @operand.run @table
+  end
+
   def print_ast indent=""
       puts "#{indent}Salida con Salto:"
       puts "#{indent + '  '}expresiones:"
@@ -1053,6 +1198,7 @@ class Salida_S < Singleton
   end
 
   def check table
+    @table = table
     return @operand.check table
   end
 end
@@ -1064,6 +1210,7 @@ class Bloque < AST
   def initialize d, i
     @dec = d
     @ins = i
+    @table = nil
   end
 
   def print_ast indent=""
@@ -1074,12 +1221,19 @@ class Bloque < AST
       @ins.print_ast indent + '    ' if @ins.respond_to? :print_ast
   end
 
+  def run table
+    @dec.run @table
+    @ins.run @table
+  end
+
+
   def check table
     t = TablasDeAlcance.new table
     t.tabla['s_$__'] = true
     @dec.check t if @dec.respond_to? :check
     insert table, t
     @ins.check t
+    @table = t
   end
 
 
@@ -1105,6 +1259,7 @@ class Condicional < AST
     @cond0 = a
     @cond1 = b
     @bloq = c
+    @table = nil
   end
   def print_ast indent=""
       puts "#{indent}Condicional:"
@@ -1115,17 +1270,34 @@ class Condicional < AST
       puts "#{indent + '  '}instrucciones:"
       @bloq.print_ast indent + '    '
   end
-
-  def check table
-    self.check_cond table,@cond0
-    self.check_Bloq table,@bloq
-    if @cond1!= nil
-      self.check_Bloq table,@cond1
+  def run table
+    if !@cond0.nil?
+      if(@cond0.run @table)
+        if @cond1.nil?
+          rt=@bloq.run @table
+        else
+          rt=@cond1.run @table
+        end
+        # puts rt
+        return rt
+      else
+        rt = @bloq.run @table
+        return rt
+      end
     end
   end
 
+  def check table
+    self.check_cond table,@cond0 if !@cond0.nil?
+    self.check_Bloq table,@bloq if !@bloq.nil?
+    if @cond1!= nil
+      self.check_Bloq table,@cond1
+    end
+    @table = table
+  end
+
   def check_cond table, cond
-    if cond.class < OpComparacion_ or cond.class < OpLogico_ or cond.class < Bools_
+    if cond.class <= OpComparacion_ or cond.class <= OpLogico_ or cond.class <= Bools_ or cond.class <= UnaryNot
       x=cond.check table
       if x[0] != 'boolean'
         raise ErrorDeTipo.new 'El argumento del If' , x[0] ,'Operacion Comparacion'
@@ -1143,15 +1315,21 @@ class Condicional < AST
   def check_Bloq table, bloq
     bloq.check table
   end
-
 end
 
 class IteracionIndeterminada < AST
   attr_accessor :exp,:bloque
 
+  def run table
+      while(@exp.run @table)
+        @bloque.run @table
+      end
+  end
+
   def initialize e, b
       @exp = e
       @bloque = b
+      @table = nil
   end
 
   def print_ast indent=""
@@ -1165,7 +1343,7 @@ class IteracionIndeterminada < AST
   def check table
     self.check_exp table
     self.check_Bloq table
-
+    @table = table
   end
 
   def check_exp table
@@ -1186,12 +1364,29 @@ class IteracionIndeterminada < AST
   def check_Bloq table
     @bloque.check table
   end
-
-
 end
 
 class IteracionDeterminada < AST
   attr_accessor :var, :desde, :hasta, :incremento ,:bloque
+
+  def run table
+     #consigo el simbolo de la variable
+     x=@var.digit
+     l1=@desde.run @table
+     l2=@hasta.run @table
+     if @incremento==nil
+       by=1
+     else
+       by=@incremento.run @table
+     end
+
+     while l1<=l2
+      #Actualizo la tabla con el valor que me da el for.
+      table.modify x.digit l1
+      @bloque.run @table
+      l1+=by
+     end
+  end
 
   def initialize v, d, h, i, b
       @var = v
@@ -1199,6 +1394,7 @@ class IteracionDeterminada < AST
       @hasta = h
       @incremento = i
       @bloque = b
+      @table = nil
   end
 
   def print_ast indent=""
@@ -1223,6 +1419,7 @@ class IteracionDeterminada < AST
     self.check_inter tableFor, @hasta
     self.check_inter tableFor, @incremento if @incremento.respond_to? :check
     self.check_Bloq tableFor
+    @table = tableFor
   end
 
   def insert table, t
@@ -1254,7 +1451,7 @@ class IteracionDeterminada < AST
         raise VariableNoDeclarada.new inter.digit, inter.lin, inter.col
       end
 
-      if x != 'number'
+      if x[0] != 'number'
         raise ErrorDeTipoArg.new 'El for' , inter.class ,'number'
       end
 
@@ -1270,13 +1467,13 @@ class IteracionDeterminada < AST
         raise ErrorDeTipo.new 'El argumento del for' , @var.class ,'number'
       end
     elsif @var.class<=Variables_
-      table.insert @var.digit,'number'
+      table.insert @var.digit,['number',nil]
       x = @var.check table
       if x == nil
         raise VariableNoDeclarada.new @var.digit, @var.lin, @var.col
       end
 
-      if x != 'number'
+      if x[0] != 'number'
         raise ErrorDeTipoArg.new 'El argumento del for' , @var.class ,'number'
       end
 
@@ -1296,6 +1493,18 @@ class IteracionDeterminada < AST
 end
 
 class IteracionDeterminadaRepeat < IteracionDeterminada
+
+  def run table
+     sentinela=0
+     hasta=@hasta.run @table
+     by=1
+
+     while sentinela<hasta
+      @bloque.run @table
+      sentinela+=1
+     end
+  end
+
 
   def print_ast indent=""
     puts "#{indent}Iteracion Determinada: "
@@ -1322,7 +1531,7 @@ class IteracionDeterminadaRepeat < IteracionDeterminada
         raise VariableNoDeclarada.new inter.digit, inter.lin, inter.col
       end
 
-      if x != 'number'
+      if x[0] != 'number'
         raise ErrorDeTipoArg.new 'El repeat' , x ,'number'
       end
 
@@ -1342,6 +1551,7 @@ class Funcion_ < AST
       @args = a
       @ret = r
       @inst = i
+      @table = nil
   end
 
   def print_ast indent=""
@@ -1374,6 +1584,8 @@ class Funcion_ < AST
       table.insert @funcion.digit, @args.check(t) if @args. respond_to? :check
     end
 
+    @table = t
+
     @inst.check t
     ret  = t.exist 'has_$_r$_'
     esp = t.find 'ret_$__'
@@ -1392,6 +1604,7 @@ class Retina_ < AST
   def initialize d, i
     @dec = d
     @inst = i
+    @table = nil
   end
 
   def print_ast indent=""
@@ -1410,11 +1623,13 @@ class Retina_ < AST
     @inst.check tableProg
 
     table.to_s
+    @table = table
     return table
   end
 
-  def run
-    @inst.run
+  def run table
+    @inst.run @table.tabla['program']
+    puts @table.tabla
   end
 
   def insertar_base padre
@@ -1463,7 +1678,7 @@ class TablasDeAlcance
     puts "#{indent +'  '}Variables:"
     table[1].tabla.each do |a|
       if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
-        puts "#{indent+'    '}#{a[0]}: #{a[1]}"
+        puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
       end
     end
 
@@ -1514,4 +1729,9 @@ class TablasDeAlcance
   def remove value
     @tabla.delete(value)
   end
+
+  def modify element, value
+    @tabla[element][1]=value
+  end
+
 end

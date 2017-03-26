@@ -126,3 +126,9 @@ class DivisionPorCero < RuntimeError
     "Error: Division por cero"
   end
 end
+
+class VariableNoInicializada < RuntimeError
+  def to_s
+    "Error: Variable no inicializada"
+  end
+end
