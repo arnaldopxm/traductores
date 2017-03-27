@@ -1,10 +1,18 @@
 #! /usr/bin/ruby
 =begin
+<<<<<<< HEAD
 	corrida: retina <archivo.rtn>
 	Analizador Lexicografico para el lenguaje retina
 Autores
 	-Arnaldo Quintero 13-11150
 	-Gabriel Gutierrez 13-10625
+=======
+  corrida: retina <archivo.rtn>
+  Analizador Lexicografico para el lenguaje retina
+Autores
+  -Arnaldo Quintero 13-11150
+  -Gabriel Gutierrez 13-10625
+>>>>>>> Gabriel
 Ultima modificacion: 25/01/2017
 =end
 

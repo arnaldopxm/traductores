@@ -1,7 +1,11 @@
 class Turtle
-  attr_accessor :act
+  attr_accessor :act :x :y :draw :sentido
 
   def initialize
+    @x=0
+    @y=0
+    @draw=0
+    @sentido=[1,1]
     @act = [500,500]
     @mtrx = []
     x = []
@@ -33,6 +37,42 @@ class Turtle
       end
 
     end
+  end
+
+  def home
+    @x=0
+    @y=0
+  end
+
+  def openeye
+    @pintar=1
+  end
+
+  def closeeye
+    @pintar=0
+  end
+
+  def forward steps
+    x+=(@sentido[0]*steps)
+    y+=(@sentido[1]*steps)
+    @mtrx[x][y]=@pintar if @pintar==1
+  end
+
+  def backward steps
+    x-=(@sentido[0]*steps)
+    y-=(@sentido[1]*steps)
+    @mtrx[x][y]=@pintar if @pintar==1
+  end
+
+  def rotatel degree
+  end
+
+  def rotatel degree
+  end
+
+  def setPosition vert hor
+    @x=hor
+    @y=vert
   end
 
 end

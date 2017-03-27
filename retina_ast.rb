@@ -408,6 +408,28 @@ class OpResta < OpAritmetico_
   end
 end
 
+class OpResta < OpAritmetico_
+  def run table
+    if @left.class != Numero_
+      left = @left.run @table
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run @table
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      # puts left - right
+      return left - right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
+  end
+end
 class OpMultiplication < OpAritmetico_
   def run table
     if @left.class != Numero_
@@ -1552,6 +1574,22 @@ class Funcion_ < AST
       @ret = r
       @inst = i
       @table = nil
+  end
+
+  def run
+
+    if @funcion == 'arc'
+    elsif @funcion == 'setposition' self.setposition @table
+    elsif @funcion == 'forward' self.forward @table
+    elsif @funcion == 'backward' self.backward arg @table
+    elsif @funcion == 'rotatel' self.rotatel arg @table
+    elsif @funcion == 'rotater' self.rotater arg @table
+    elsif @funcion == 'home' self.home @table
+    elsif @funcion == 'openeye' self.openeye @table
+    elsif @funcion == 'closeeye' self.closeeye @table
+    else
+      # ACA TODA REVISAR LAS TABLAS Y ESO
+    end
   end
 
   def print_ast indent=""
