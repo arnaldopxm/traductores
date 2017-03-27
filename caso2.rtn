@@ -14,16 +14,5 @@ program
       end;
     end;
     if then end;
-    # x = 10;
-    # x = 200/10 % 3;
-    # y = true and false;
-    # y = (5 <= 5) and not (true and false);
-    #
-    # if true and false then
-    #   x = 1;
-    # else
-    #   x = x + 1;
-    # end;
-
   end;
 end;
