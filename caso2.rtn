@@ -1,18 +1,24 @@
+func chao_(number x) begin
+  writeln x;
+end;
+
+func hola_() begin
+  writeln "hola_";
+end;
+
+func chao() begin
+  writeln "chao";
+end;
+
+func hola() begin
+  writeln "hola";
+end;
+
 program
   with
-    number x = 0;
-    boolean y = true;
-    number i = 10;
+    boolean x = true;
   do
-    while y do
-      if i > 0 then
-        writeln i;
-        i = i - 1;
-      else
-        writeln "Programa Terminado";
-        y = false;
-      end;
-    end;
-    if then end;
+    hola();
+    chao_(100);
   end;
 end;

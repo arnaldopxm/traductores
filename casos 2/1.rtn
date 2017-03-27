@@ -1,0 +1,45 @@
+func min(number x, number y) -> number
+begin
+    if x < y then
+        return x;
+    end;
+    return y;
+end;
+
+func max(number x, number y) -> number
+begin
+    with
+        boolean b;
+    do
+        b = x > y;
+        if b then
+            return x;
+        end;
+        return y;
+    end;
+end;
+
+program
+    writeln "Starting...";
+    with
+        boolean forwar;
+    do
+        read forwar;
+        with
+            number forwar = 23;
+        do
+            while forwar <= 27 do
+                with
+                    number steps;
+                do
+                    steps;
+                    #backward(steps);
+                end;
+                forwar = forwar + 1;
+            end;
+        end;
+        writeln "You said: ", forwar;
+    end;
+    #forward(0);
+    writeln "Finished";
+end;
