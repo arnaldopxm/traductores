@@ -6,23 +6,40 @@ Autores:
   -Gabriel Gutierrez 13-10625
 =end
 
+class ErrorEntrada < RuntimeError
+  def to_s
+    "Error: Se introdujo en la entrada un valor diferente a un numero o un booleano"
+  end
+end
+
+class ErrorEntradaTipo < RuntimeError
+    
+  def to_s
+    "Error: El tipo de la entrada no corresponde con el tipo de la variable"
+  end
+end
+
 class VariableNoDeclarada < RuntimeError
-  def initialize tok
+  def initialize tok, lin, col
     @token = tok
+    @lin = lin
+    @col = col
   end
 
   def to_s
-    "Error: variable no declarada '#{@token}'"
+    "Error: variable no declarada '#{@token}'. lin: #{@lin}, col: #{@col}"
   end
 end
 
 class FuncionNoDeclarada < RuntimeError
-  def initialize tok
+  def initialize tok, lin, col
     @token = tok
+    @lin = lin
+    @col = col
   end
 
   def to_s
-    "Error: funcion no declarada '#{@token}'"
+    "Error: funcion no declarada '#{@token}'. lin: #{@lin}, col: #{@col}"
   end
 end
 
@@ -114,5 +131,17 @@ end
 class ErrorDeTipoArg < ErrorDeTipo
   def to_s
     "Error: '#{@token}' contiene una expresion de tipo '#{@act}' y se esperaba una de tipo '#{@esp}'"
+  end
+end
+
+class DivisionPorCero < RuntimeError
+  def to_s
+    "Error: Division por cero"
+  end
+end
+
+class VariableNoInicializada < RuntimeError
+  def to_s
+    "Error: Variable no inicializada"
   end
 end

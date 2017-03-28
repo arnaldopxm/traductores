@@ -88,7 +88,7 @@ class Numero_ < AST
     end
 
     def run table
-      return Integer(Float(@digit))
+      return Float(@digit)
     end
 end
 
@@ -408,6 +408,28 @@ class OpResta < OpAritmetico_
   end
 end
 
+class OpResta < OpAritmetico_
+  def run table
+    if @left.class != Numero_
+      left = @left.run @table
+    else
+      left = Float(@left.digit)
+    end
+
+    if @right.class != Numero_
+      right = @right.run @table
+    else
+      right = Float(@right.digit)
+    end
+
+    begin
+      # puts left - right
+      return left - right
+    rescue NoMethodError
+      raise VariableNoInicializada.new
+    end
+  end
+end
 class OpMultiplication < OpAritmetico_
   def run table
     if @left.class != Numero_
@@ -849,7 +871,7 @@ class OpAsignacion < BinaryOP
     esp = table.find @left.digit
     esp = esp[0]
 
-    if @right.class < UnaryOP
+    if @right.class <= UnaryOP
       x = @right.check table
       act = x[0][0]
       tok = x[1]
@@ -863,7 +885,7 @@ class OpAsignacion < BinaryOP
       end
 
 
-    elsif @right.class < Bools_ or @right.class == Numero_
+    elsif @right.class <= Bools_ or @right.class == Numero_
       tok = @right.digit
       if @right.class == Numero_
         act = 'number'
@@ -873,14 +895,15 @@ class OpAsignacion < BinaryOP
 
     elsif @right.class == LlamadaFunciones_
       x = @right.check table
-      act = x[0][0]
+      # puts "#{@right.find_(@right.table.obj.dec,@right.name).ret.digit}...-..."
+      # puts "#{x}..-.."
+      act = right.find_(@right.table.obj.dec,@right.name).ret.digit
       tok = x[1]
 
     else
       x = @right.check table
       act = x[0]
       tok = x[1]
-
     end
 
     unless esp == act
@@ -912,7 +935,7 @@ class Declaracion_ < AST
 
   def check table
     if @ident.class != OpAsignacion
-      if table.exist @ident.digit and !table.exist('s_$__')
+      if table.exist @ident.digit #and !table.exist('s_$__')
         raise ErrorExistencia.new @ident.digit
       else
         table.remove 's_$__' if table.exist('s_$__')
@@ -921,7 +944,17 @@ class Declaracion_ < AST
     else
       x = @ident.right.check table
       x = x[0] if x.class == Array
-      table.insert @ident.left.digit, [x,nil]
+
+      if !table.exist(@ident.left.digit)
+        type = @ident.right.check table
+        if type[0] == @tipo.digit
+          table.insert @ident.left.digit, [x,nil]
+        else
+          raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
+        end
+      else
+        raise ErrorExistencia.new @ident.left.digit
+      end
     end
     @table = table
     return table
@@ -956,12 +989,13 @@ end
 
 # Funciones
 class LlamadaFunciones_ < AST
-  attr_accessor :name, :args
+  attr_accessor :name, :args, :num_args, :table
 
   def initialize name,arg
     @name=name
     @args=arg
     @table = nil
+    @num_args = nil
   end
 
   def print_ast indent=""
@@ -972,8 +1006,55 @@ class LlamadaFunciones_ < AST
       @args.print_ast indent + '    ' if @args.respond_to? :print_ast
   end
 
+  def run table
+
+    # puts @table.obj
+    # puts
+    ret = @table.obj
+    # puts ret.dec.arg0.arg0
+
+    if ret.dec.class == EnSerie
+      f = find_ ret.dec, @name
+
+      f.run @table, @num_args, @args
+    else
+      #puts "AAAAAA"
+      if ret.dec.funcion.digit == @name.digit
+        #puts "es la que es"
+        ret.dec.run table
+      end
+    end
+
+  end
+
+  def find_ dec, name
+
+    if dec.arg0.class == Funcion_
+      if dec.arg0.funcion.digit == name.digit
+        return dec.arg0
+      end
+    end
+
+    if dec.arg1.class == Funcion_
+      if dec.arg1.funcion.digit == name.digit
+        return dec.arg1
+      end
+    end
+
+    if dec.arg0.class == EnSerie
+      return find_ dec.arg0, name
+    end
+
+    if dec.arg1.class == EnSerie
+      return find_ dec.arg1, name
+    end
+
+  end
+
   def check table
     reserv = false
+    @table = table
+
     if @name.class == Palabra_
       ident = @name.nombre
       reserv = true
@@ -986,6 +1067,10 @@ class LlamadaFunciones_ < AST
     end
 
     x = cantidadArgs ident, table
+    # puts ".."
+    # puts x
+    # puts ".."
+    @num_args = x
     cant = x[0]
     act = 0
     act = argsActuales @args if !args.nil?
@@ -993,7 +1078,10 @@ class LlamadaFunciones_ < AST
     if act != cant
       raise ErrorCantArgumentos.new ident, cant, act
     else
-      @table = table
+      # puts '.'
+      # puts x[1]
+      # puts '.'
+
       checkTypes @args, table, cant, ident, reserv, x[1] if act!=0
       if table.exist 'ret_$__'
         return [table.find('ret_$__'),ident]
@@ -1027,11 +1115,14 @@ class LlamadaFunciones_ < AST
   def checkTypes args, table, cant, ident, reserv, array
 
     if cant == 1
+      # puts '..'
+      # puts array
+      # puts '..'
       t = args.check table
       if reserv
         raise ErrorDeTipo.new args.digit,t,'number' if t != 'number'
       else
-        raise ErrorDeTipo.new args.digit,t[0],array[0][1] if t[0] != array[0][1]
+        raise ErrorDeTipo.new args.digit,t[0],array[0][1] if t[0] != array[0][1][0]
       end
 
     else
@@ -1073,7 +1164,11 @@ class LlamadaFunciones_ < AST
     else
       i = 0
       x = []
-      table.find(name).tabla.each do |a|
+      # puts '--'
+      # puts table.padre.find(name)
+      # puts name
+      # puts '--'
+      table.padre.find(name)[0].tabla.each do |a|
         if(a[1].class==TablasDeAlcance)
 
           if ['ret_$__','has_$_r$_'].include? a[0]
@@ -1092,6 +1187,9 @@ class LlamadaFunciones_ < AST
         end
 
       end
+      # puts '...'
+      # puts x
+      # puts '...'
       return [i,x]
     end
   end
@@ -1110,27 +1208,37 @@ class Return_ < Singleton
       end
   end
 
+  def run table
+    # puts @table.tabla
+    # puts @operand.run @table
+    return @operand.run @table
+  end
+
   def check table
     ret = table.exist 'ret_$__'
 
     if ret
       retType = table.find 'ret_$__'
+      # puts ".///..#{retType}"
       if retType == false
         raise ErrorReturn.new 0, nil, nil
       else
         y = @operand.check(table)
         y = y[0] if y.class == Array
-
+        # puts "#{y}{{{{{{}}}}}}"
         if retType != y
           raise ErrorReturn.new 1, y, retType
         else
           table.insert 'has_$_r$_', true
+          # puts "#{table.tabla}{+{+{+{+{}}}}}"
           x = table
 
           while x.padre
             x = x.padre
             x.insert 'has_$_r$_', true
           end
+
+          x.remove 'has_$_r$_'
 
           @table = table
           return [retType,@operand]
@@ -1161,13 +1269,55 @@ class Entrada < Singleton
       raise VariableNoDeclarada.new @operand.digit, @operand.lin, @operand.col
     end
   end
+
+  def run table
+    x=$stdin.gets
+    tipo=@table.find  @operand.digit
+    tipo=tipo[0]
+    print tipo
+    print x
+
+    if x=~/\Atrue$/
+      if tipo=='boolean' 
+        @table.modify @operand.digit,true
+      else 
+        raise ErrorEntradaTipo.new 
+      end
+      
+    elsif x=~/\Afalse$/
+      if tipo=='boolean' 
+        @table.modify @operand.digit,false
+      else 
+        raise ErrorEntradaTipo.new 
+      end
+      
+    elsif x=~/\A\d+(\.\d+)*$/
+      puts "aca"
+      if tipo=='number' 
+        @table.modify @operand.digit,Float(x)
+      else 
+        puts "aca2"
+        raise ErrorEntradaTipo.new 
+      end
+      
+    else
+      raise ErrorEntrada
+    end
+
+  end
 end
 
 # Salida
 class Salida_ < Singleton
   def run table
-    print @operand.run @table
+    if @operand.class == String_
+      x = %Q(@operand.run(@table))
+      print x.class
+    else
+      print @operand.run(@table)
+    end
   end
+
   def print_ast indent=""
       puts "#{indent}Salida:"
       puts "#{indent + '  '}expresiones:"
@@ -1186,7 +1336,11 @@ end
 class Salida_S < Singleton
 
   def run table
-    puts @operand.run @table
+    if @operand.class == String_
+      puts @operand.run(@table)[1..-2]
+    else
+      puts @operand.run(@table)
+    end
   end
 
   def print_ast indent=""
@@ -1229,6 +1383,7 @@ class Bloque < AST
 
   def check table
     t = TablasDeAlcance.new table
+    t.obj = table.obj
     t.tabla['s_$__'] = true
     @dec.check t if @dec.respond_to? :check
     insert table, t
@@ -1281,8 +1436,10 @@ class Condicional < AST
         # puts rt
         return rt
       else
-        rt = @bloq.run @table
-        return rt
+        if !(@cond1.nil?)
+          rt = @bloq.run @table
+          return rt
+        end
       end
     end
   end
@@ -1371,7 +1528,7 @@ class IteracionDeterminada < AST
 
   def run table
      #consigo el simbolo de la variable
-     x=@var.digit
+     x=@var
      l1=@desde.run @table
      l2=@hasta.run @table
      if @incremento==nil
@@ -1382,7 +1539,7 @@ class IteracionDeterminada < AST
 
      while l1<=l2
       #Actualizo la tabla con el valor que me da el for.
-      table.modify x.digit l1
+      @table.modify x.digit, l1
       @bloque.run @table
       l1+=by
      end
@@ -1413,6 +1570,7 @@ class IteracionDeterminada < AST
 
   def check table
     tableFor = TablasDeAlcance.new table
+    tableFor.obj = table.obj
     insert table, tableFor
     self.check_var tableFor if @var.respond_to? :check
     self.check_inter tableFor,@desde if @desde.respond_to? :check
@@ -1554,22 +1712,58 @@ class Funcion_ < AST
       @table = nil
   end
 
-  def run
-
-    if @funcion == 'arc'
-    elsif @funcion == 'setposition' self.setposition @table
-    elsif @funcion == 'forward' self.forward @table
-    elsif @funcion == 'backward' self.backward arg @table
-    elsif @funcion == 'rotatel' self.rotatel arg @table
-    elsif @funcion == 'rotater' self.rotater arg @table
-    elsif @funcion == 'home' self.home @table
-    elsif @funcion == 'openeye' self.openeye @table
-    elsif @funcion == 'closeeye' self.closeeye @table
+  def inic x, arg, i, table
+    if arg.class == EnSerie
+      x[i][1][1] = arg.arg0.run table
+      i = i + 1
+      inic x, arg.arg1, i, table
     else
-      # ACA TODA REVISAR LAS TABLAS Y ESO
+      # puts arg.run table
+      x[i][1][1] = arg.run table
     end
   end
 
+  def run table, num_args, *args
+    x = num_args.clone
+    x = x[1]
+
+    # puts "before: #{x}"
+    # puts ".-.-.-"
+    inic x, args[0], 0, table if num_args[0] != 0
+    # puts "after: #{x}"
+    # puts ".-.-.-"
+
+    x.each do |a|
+      @table.modify a[0], a[1][1] if num_args[0] != 0
+    end
+
+    if @funcion == 'arc'
+
+    elsif @funcion == 'setposition'
+      self.setposition @table
+    elsif @funcion == 'forward'
+      self.forward @table
+    elsif @funcion == 'backward'
+      self.backward arg @table
+    elsif @funcion == 'rotatel'
+      self.rotatel arg @table
+    elsif @funcion == 'rotater'
+      self.rotater arg @table
+    elsif @funcion == 'home'
+      self.home @table
+    elsif @funcion == 'openeye'
+      self.openeye @table
+    elsif @funcion == 'closeeye'
+      self.closeeye @table
+    else
+      # puts "ELSEEE"
+      ret = @inst.run table
+      if !@ret.nil?
+        # puts "..-.#{ret}.-.."
+        return ret
+      end
+    end
+  end
 
   def print_ast indent=""
       puts "#{indent}Declaracion de funcion:"
@@ -1585,8 +1779,10 @@ class Funcion_ < AST
 
   def check table
     t = TablasDeAlcance.new table
+    t.obj = table.obj
     if @ret
       if @ret.class == Number_
+        # puts t.tabla
         t.tabla['ret_$__'] = 'number'
       else
         t.tabla['ret_$__'] = 'boolean'
@@ -1597,15 +1793,32 @@ class Funcion_ < AST
     if table.exist @funcion.digit
       raise ErrorExistencia.new @funcion.digit
     else
-      table.insert @funcion.digit, TablasDeAlcance.new(table)
-      table.insert @funcion.digit, @args.check(t) if @args. respond_to? :check
+
+      w = TablasDeAlcance.new(table)
+      w.obj = table.obj
+      # if @ret
+      #   if @ret.class == Number_
+      #     w.tabla['ret_$__'] = 'number'
+      #   else
+      #     w.tabla['ret_$__'] = 'boolean'
+      #   end
+      # else
+      #   w.tabla['ret_$__']=false
+      # end
+      # puts "#{w.tabla}------------.."
+      table.insert @funcion.digit, [w,nil]
+      table.insert @funcion.digit, [@args.check(t),nil] if @args.respond_to? :check
+      #  puts table.tabla
     end
 
     @table = t
-
+    # puts "./././#{t.tabla}"
     @inst.check t
+    # puts "#{t.tabla}!!!!!@@@@!!"
     ret  = t.exist 'has_$_r$_'
     esp = t.find 'ret_$__'
+    # puts "#{ret}...#{esp}"
+
     if !ret and esp
       raise ErrorReturn.new 2,nil,esp
     end
@@ -1633,8 +1846,10 @@ class Retina_ < AST
 
   def check
     table = TablasDeAlcance.new nil
+    table.obj = self
     @dec.check table if @dec.respond_to? :check
     tableProg = TablasDeAlcance.new table
+    tableProg.obj = self
     table.insert 'program' , tableProg
     insertar_base table
     @inst.check tableProg
@@ -1646,7 +1861,7 @@ class Retina_ < AST
 
   def run table
     @inst.run @table.tabla['program']
-    puts @table.tabla
+    #puts @table.tabla
   end
 
   def insertar_base padre
@@ -1657,6 +1872,7 @@ class Retina_ < AST
     z['arg1'] = 'number'
 
     t_0 = TablasDeAlcance.new padre
+    t_0.obj = padre.obj
     t_0.tabla = x
 
     t_1 = t_0.clone
@@ -1680,7 +1896,7 @@ class Retina_ < AST
 end
 
 class TablasDeAlcance
-  attr_accessor :tabla, :padre
+  attr_accessor :tabla, :padre, :obj
 
   def print_
     @tabla.each do |a|
@@ -1693,22 +1909,41 @@ class TablasDeAlcance
     puts "#{indent}Alcance #{table[0]}_:"
 
     puts "#{indent +'  '}Variables:"
-    table[1].tabla.each do |a|
-      if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
-        puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+    if table[1].respond_to? :tabla
+      table[1].tabla.each do |a|
+        if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
+          puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+        end
       end
-    end
 
-    print "#{indent +'  '}Sub_alcance:"
-    x = false
-    table[1].tabla.each do |a|
-      if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
-        puts '' if !x
-        print_table a, indent + '    '
-        x = true
+      print "#{indent +'  '}Sub_alcance:"
+      x = false
+      table[1].tabla.each do |a|
+        if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
+          puts '' if !x
+          print_table a, indent + '    '
+          x = true
+        end
       end
+      puts " None" if !x
+
+    else
+      table[1][0].tabla.each do |a|
+        if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
+          puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+        end
+      end
+      print "#{indent +'  '}Sub_alcance:"
+      x = false
+      table[1][0].tabla.each do |a|
+        if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
+          puts '' if !x
+          print_table a, indent + '    '
+          x = true
+        end
+      end
+      puts " None" if !x
     end
-    puts " None" if !x
 
   end
 
@@ -1748,7 +1983,11 @@ class TablasDeAlcance
   end
 
   def modify element, value
-    @tabla[element][1]=value
+    if @tabla[element]
+      @tabla[element][1]=value
+    else
+      @padre.modify element, value
+    end
   end
 
 end
