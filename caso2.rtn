@@ -7,8 +7,9 @@ func hola_() begin
   writeln "hola_";
 end;
 
-func chao() begin
+func a_chao() -> boolean begin
   writeln "chao";
+  return true;
 end;
 
 func hola(number x) begin
@@ -21,7 +22,12 @@ program
     boolean x = true;
     number w = 10;
   do
+    # hola_();
     # hola(3.14159265);
-    w = chao_(100);
+    x = a_chao();
+    writeln x;
+    read x;
+    writeln x;
+    # writeln w/2;
   end;
 end;

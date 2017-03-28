@@ -894,10 +894,10 @@ class OpAsignacion < BinaryOP
       end
 
     elsif @right.class == LlamadaFunciones_
-      x = @right.check table.padre
-      puts table
-      puts "#{x}..-.."
-      act = x[0][0]
+      x = @right.check table
+      # puts "#{@right.find_(@right.table.obj.dec,@right.name).ret.digit}...-..."
+      # puts "#{x}..-.."
+      act = right.find_(@right.table.obj.dec,@right.name).ret.digit
       tok = x[1]
 
     else
@@ -989,7 +989,7 @@ end
 
 # Funciones
 class LlamadaFunciones_ < AST
-  attr_accessor :name, :args, :num_args
+  attr_accessor :name, :args, :num_args, :table
 
   def initialize name,arg
     @name=name
@@ -1067,9 +1067,9 @@ class LlamadaFunciones_ < AST
     end
 
     x = cantidadArgs ident, table
-    puts ".."
-    puts x
-    puts ".."
+    # puts ".."
+    # puts x
+    # puts ".."
     @num_args = x
     cant = x[0]
     act = 0
@@ -1078,9 +1078,9 @@ class LlamadaFunciones_ < AST
     if act != cant
       raise ErrorCantArgumentos.new ident, cant, act
     else
-      puts '.'
-      puts x[1]
-      puts '.'
+      # puts '.'
+      # puts x[1]
+      # puts '.'
 
       checkTypes @args, table, cant, ident, reserv, x[1] if act!=0
       if table.exist 'ret_$__'
@@ -1115,9 +1115,9 @@ class LlamadaFunciones_ < AST
   def checkTypes args, table, cant, ident, reserv, array
 
     if cant == 1
-      puts '..'
-      puts array
-      puts '..'
+      # puts '..'
+      # puts array
+      # puts '..'
       t = args.check table
       if reserv
         raise ErrorDeTipo.new args.digit,t,'number' if t != 'number'
@@ -1164,10 +1164,10 @@ class LlamadaFunciones_ < AST
     else
       i = 0
       x = []
-      puts '--'
-      puts table.padre.find(name)
-      puts name
-      puts '--'
+      # puts '--'
+      # puts table.padre.find(name)
+      # puts name
+      # puts '--'
       table.padre.find(name)[0].tabla.each do |a|
         if(a[1].class==TablasDeAlcance)
 
@@ -1187,9 +1187,9 @@ class LlamadaFunciones_ < AST
         end
 
       end
-      puts '...'
-      puts x
-      puts '...'
+      # puts '...'
+      # puts x
+      # puts '...'
       return [i,x]
     end
   end
@@ -1219,22 +1219,26 @@ class Return_ < Singleton
 
     if ret
       retType = table.find 'ret_$__'
+      # puts ".///..#{retType}"
       if retType == false
         raise ErrorReturn.new 0, nil, nil
       else
         y = @operand.check(table)
         y = y[0] if y.class == Array
-
+        # puts "#{y}{{{{{{}}}}}}"
         if retType != y
           raise ErrorReturn.new 1, y, retType
         else
           table.insert 'has_$_r$_', true
+          # puts "#{table.tabla}{+{+{+{+{}}}}}"
           x = table
 
           while x.padre
             x = x.padre
             x.insert 'has_$_r$_', true
           end
+
+          x.remove 'has_$_r$_'
 
           @table = table
           return [retType,@operand]
@@ -1274,8 +1278,13 @@ end
 # Salida
 class Salida_ < Singleton
   def run table
-    print (@operand.run @table)[1..-2]
+    if @operand.class == String_
+      puts @operand.run(@table)[1..-2]
+    else
+      puts @operand.run(@table)
+    end
   end
+
   def print_ast indent=""
       puts "#{indent}Salida:"
       puts "#{indent + '  '}expresiones:"
@@ -1717,7 +1726,7 @@ class Funcion_ < AST
       # puts "ELSEEE"
       ret = @inst.run table
       if !@ret.nil?
-        puts "..-.#{ret}.-.."
+        # puts "..-.#{ret}.-.."
         return ret
       end
     end
@@ -1740,6 +1749,7 @@ class Funcion_ < AST
     t.obj = table.obj
     if @ret
       if @ret.class == Number_
+        # puts t.tabla
         t.tabla['ret_$__'] = 'number'
       else
         t.tabla['ret_$__'] = 'boolean'
@@ -1750,17 +1760,32 @@ class Funcion_ < AST
     if table.exist @funcion.digit
       raise ErrorExistencia.new @funcion.digit
     else
+
       w = TablasDeAlcance.new(table)
       w.obj = table.obj
+      # if @ret
+      #   if @ret.class == Number_
+      #     w.tabla['ret_$__'] = 'number'
+      #   else
+      #     w.tabla['ret_$__'] = 'boolean'
+      #   end
+      # else
+      #   w.tabla['ret_$__']=false
+      # end
+      # puts "#{w.tabla}------------.."
       table.insert @funcion.digit, [w,nil]
-      table.insert @funcion.digit, [@args.check(t),nil] if @args. respond_to? :check
+      table.insert @funcion.digit, [@args.check(t),nil] if @args.respond_to? :check
+      #  puts table.tabla
     end
 
     @table = t
-
+    # puts "./././#{t.tabla}"
     @inst.check t
+    # puts "#{t.tabla}!!!!!@@@@!!"
     ret  = t.exist 'has_$_r$_'
     esp = t.find 'ret_$__'
+    # puts "#{ret}...#{esp}"
+
     if !ret and esp
       raise ErrorReturn.new 2,nil,esp
     end
