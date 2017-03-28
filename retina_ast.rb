@@ -894,7 +894,9 @@ class OpAsignacion < BinaryOP
       end
 
     elsif @right.class == LlamadaFunciones_
-      x = @right.check table
+      x = @right.check table.padre
+      puts table
+      puts "#{x}..-.."
       act = x[0][0]
       tok = x[1]
 
@@ -987,12 +989,13 @@ end
 
 # Funciones
 class LlamadaFunciones_ < AST
-  attr_accessor :name, :args
+  attr_accessor :name, :args, :num_args
 
   def initialize name,arg
     @name=name
     @args=arg
     @table = nil
+    @num_args = nil
   end
 
   def print_ast indent=""
@@ -1012,7 +1015,8 @@ class LlamadaFunciones_ < AST
 
     if ret.dec.class == EnSerie
       f = find_ ret.dec, @name
-      f.run table
+
+      f.run @table, @num_args, @args
     else
       #puts "AAAAAA"
       if ret.dec.funcion.digit == @name.digit
@@ -1063,6 +1067,10 @@ class LlamadaFunciones_ < AST
     end
 
     x = cantidadArgs ident, table
+    puts ".."
+    puts x
+    puts ".."
+    @num_args = x
     cant = x[0]
     act = 0
     act = argsActuales @args if !args.nil?
@@ -1157,10 +1165,10 @@ class LlamadaFunciones_ < AST
       i = 0
       x = []
       puts '--'
-      puts table.attrs
+      puts table.padre.find(name)
       puts name
       puts '--'
-      table.find(name).tabla.each do |a|
+      table.padre.find(name)[0].tabla.each do |a|
         if(a[1].class==TablasDeAlcance)
 
           if ['ret_$__','has_$_r$_'].include? a[0]
@@ -1198,6 +1206,12 @@ class Return_ < Singleton
       attrs.each do |a|
           a.print_ast indent + "  " if a.respond_to? :print_ast
       end
+  end
+
+  def run table
+    # puts @table.tabla
+    # puts @operand.run @table
+    return @operand.run @table
   end
 
   def check table
@@ -1656,8 +1670,30 @@ class Funcion_ < AST
       @table = nil
   end
 
-  def run table
-    # puts @funcion
+  def inic x, arg, i, table
+    if arg.class == EnSerie
+      x[i][1][1] = arg.arg0.run table
+      i = i + 1
+      inic x, arg.arg1, i, table
+    else
+      # puts arg.run table
+      x[i][1][1] = arg.run table
+    end
+  end
+
+  def run table, num_args, *args
+    x = num_args.clone
+    x = x[1]
+
+    # puts "before: #{x}"
+    # puts ".-.-.-"
+    inic x, args[0], 0, table if num_args[0] != 0
+    # puts "after: #{x}"
+    # puts ".-.-.-"
+
+    x.each do |a|
+      @table.modify a[0], a[1][1] if num_args[0] != 0
+    end
 
     if @funcion == 'arc'
 
@@ -1679,7 +1715,11 @@ class Funcion_ < AST
       self.closeeye @table
     else
       # puts "ELSEEE"
-      @inst.run table
+      ret = @inst.run table
+      if !@ret.nil?
+        puts "..-.#{ret}.-.."
+        return ret
+      end
     end
   end
 
@@ -1811,22 +1851,41 @@ class TablasDeAlcance
     puts "#{indent}Alcance #{table[0]}_:"
 
     puts "#{indent +'  '}Variables:"
-    table[1].tabla.each do |a|
-      if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
-        puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+    if table[1].respond_to? :tabla
+      table[1].tabla.each do |a|
+        if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
+          puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+        end
       end
-    end
 
-    print "#{indent +'  '}Sub_alcance:"
-    x = false
-    table[1].tabla.each do |a|
-      if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
-        puts '' if !x
-        print_table a, indent + '    '
-        x = true
+      print "#{indent +'  '}Sub_alcance:"
+      x = false
+      table[1].tabla.each do |a|
+        if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
+          puts '' if !x
+          print_table a, indent + '    '
+          x = true
+        end
       end
+      puts " None" if !x
+
+    else
+      table[1][0].tabla.each do |a|
+        if (! ['has_$_r$_','ret_$__','s_$__'].include? a[0]) and (a[1].class != TablasDeAlcance)
+          puts "#{indent+'    '}#{a[0]}: #{a[1][0]}"
+        end
+      end
+      print "#{indent +'  '}Sub_alcance:"
+      x = false
+      table[1][0].tabla.each do |a|
+        if a[1].class == TablasDeAlcance and !['has_$_r$_','ret_$__'].include? a[0]
+          puts '' if !x
+          print_table a, indent + '    '
+          x = true
+        end
+      end
+      puts " None" if !x
     end
-    puts " None" if !x
 
   end
 

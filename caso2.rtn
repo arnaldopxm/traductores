@@ -1,5 +1,6 @@
-func chao_(number x) begin
-  writeln x;
+func chao_(number x) -> number begin
+  writeln x/10;
+  return x+1;
 end;
 
 func hola_() begin
@@ -10,15 +11,17 @@ func chao() begin
   writeln "chao";
 end;
 
-func hola() begin
+func hola(number x) begin
   writeln "hola";
+  x = x/x;
 end;
 
 program
   with
     boolean x = true;
+    number w = 10;
   do
-    hola();
-    chao_(100);
+    # hola(3.14159265);
+    w = chao_(100);
   end;
 end;
