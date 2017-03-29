@@ -897,8 +897,12 @@ class OpAsignacion < BinaryOP
       x = @right.check table
       # puts "#{@right.find_(@right.table.obj.dec,@right.name).ret.digit}...-..."
       # puts "#{x}..-.."
-      act = right.find_(@right.table.obj.dec,@right.name).ret.digit
-      tok = x[1]
+      if right.find_(@right.table.obj.dec,@right.name).ret.nil?
+        raise ErrorFuncionNull.new
+      else
+        act = right.find_(@right.table.obj.dec,@right.name).ret.digit
+        tok = x[1]
+      end
 
     else
       x = @right.check table
@@ -1272,6 +1276,7 @@ class Entrada < Singleton
 
   def run table
     #NO FUNCIONA USAR GETS?????
+    $stdin.gets
   end
 end
 
@@ -1279,9 +1284,11 @@ end
 class Salida_ < Singleton
   def run table
     if @operand.class == String_
-      puts @operand.run(@table)[1..-2]
+      x = @operand.run(@table)[1..-2]
+      x = eval(%Q{"#{x}"})
+      print x
     else
-      puts @operand.run(@table)
+      print @operand.run(@table)
     end
   end
 
@@ -1304,7 +1311,9 @@ class Salida_S < Singleton
 
   def run table
     if @operand.class == String_
-      puts @operand.run(@table)[1..-2]
+      x = @operand.run(@table)[1..-2]
+      x = eval(%Q{"#{x}"})
+      puts x
     else
       puts @operand.run(@table)
     end

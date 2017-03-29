@@ -1,5 +1,6 @@
 func chao_(number x) -> number begin
   writeln x/10;
+  read x;
   return x+1;
 end;
 
@@ -7,9 +8,8 @@ func hola_() begin
   writeln "hola_";
 end;
 
-func a_chao() -> boolean begin
-  writeln "chao";
-  return true;
+func a_chao() begin
+  write "chao \" hola \" \\ \n";
 end;
 
 func hola(number x) begin
@@ -24,10 +24,11 @@ program
   do
     # hola_();
     # hola(3.14159265);
-    x = a_chao();
-    writeln x;
-    read x;
-    writeln x;
+    a_chao();
+    # writeln x;
+    # # read x;
+    # writeln x;
     # writeln w/2;
+    # w = chao_(100);
   end;
 end;

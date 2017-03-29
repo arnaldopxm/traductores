@@ -132,3 +132,10 @@ class VariableNoInicializada < RuntimeError
     "Error: Variable no inicializada"
   end
 end
+
+class ErrorFuncionNull < RuntimeError
+
+  def to_s
+    "Error: Funcion sin return usada para asignacion"
+  end
+end

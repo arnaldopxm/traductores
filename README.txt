@@ -1,0 +1,1 @@
+RECUERDA QUE HAY UN PATH=$PATH EN EL ~/.bashrc

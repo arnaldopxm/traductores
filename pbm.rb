@@ -46,46 +46,68 @@ class Turtle
   end
 
   def forward steps
-    x = Math.cos(@sent)*steps
-    x = Integer(x) + @act[1]
-    x0 = @act[1]
-    y = @act[0]
-    not_eql = true
-    puts "x = #{x}"
-    puts "angle = #{@sent*180/$pi}"
-    puts "act[0] = #{@act[0]}"
+    x = Math.cos(@sent + $pi/2)*steps + @act[0]
+    x = Integer(x)
 
-    @mtrx[y][x0] = 1 if @draw == 1
-
-    while not_eql
-
-      if x0 > x
-        x0 = x0 - 1
-        y = (x - x0)*Math.tan(@sent) + @act[0]
-        puts (x - x0)
-        y = Integer(y)
-        # puts "#{x0},#{y}"
-      else
-        x0 = x0 + 1
-        y = (x - x0)*Math.tan(@sent).round + @act[0]
-        puts (x - x0)*Math.tan(@sent).round + @act[0]
-        y = Integer(y)
-        # puts "#{x0},#{y}"
+    if @sent == $pi
+      puts "if"
+      x = act[0] - steps
+      b = act[0]
+      @mtrx[act[1]][b] = 1 if @draw == 1
+      while b != x
+        if b > x
+          b = b - 1
+        else
+          b = b + 1
+        end
+        @mtrx[act[1]][b] = 1 if @draw == 1
       end
+      @act = [b,act[1]]
 
-      # @act = [y,x0]
-      begin
-        @mtrx[y][x0] = 1 if @draw == 1
-      rescue
+    elsif @sent == 0 or @sent == 360
+      puts "elsif"
+      x = act[0] + steps
+      b = act[0]
+      @mtrx[act[1]][b] = 1 if @draw == 1
+      while b != x
+        if b > x
+          b = b - 1
+        else
+          b = b + 1
+        end
+        @mtrx[act[1]][b] = 1 if @draw == 1
       end
+      @act = [b,act[1]]
 
-      not_eql = false if x0 == x
+    else
+      puts "else"
+      b = @act[0]
+      y = @act[1]
+      puts "#{b},#{y}"
+      @mtrx[b][y] = 1 if @draw == 1
 
+      while b != x
+
+        if b > x
+          puts "igg"
+          b = b - 1
+        else
+          puts "egg"
+          b = b + 1
+        end
+
+        y = Math.tan(@sent + $pi/2)*(b-@act[1]) + @act[1]
+        puts @sent*180/$pi
+        # y = y - 30 if @sent !=0
+        y = Integer(y)
+        puts "..#{b},#{y}"
+        begin
+          @mtrx[b][y] = 1 if @draw == 1
+        rescue
+        end
+      end
+      @act = [b,y]
     end
-    @act = [y,x0]
-    puts @act.to_s
-
-    # puts "#{x0},#{y}"
   end
 
   def backward steps
@@ -108,9 +130,9 @@ class Turtle
     elsif @sent>3*$pi/2 and @sent<2*pi
       x = @sent*180/$pi-180
     end
-    self.setDegree(x)
+    self.setGrade(x)
     forward(steps)
-    self.setDegree(y)
+    self.setGrade(y)
   end
 
   def rotater degree
@@ -131,10 +153,10 @@ class Turtle
   end
 
   def setPosition hor, ver
-    @act = [ver-500,hor-500]
+    @act = [-(ver-500),hor+500]
   end
 
-  def setDegree val
+  def setGrade val
     @sent = val*$pi/180
   end
 
@@ -147,7 +169,7 @@ class Turtle
     self.forward(500)
     self.setPosition(0,0)
     self.backward(500)
-    self.setDegree(0)
+    self.setGrade(0)
     self.setPosition(0,0)
     self.forward(500)
     self.setPosition(0,0)
@@ -161,6 +183,12 @@ class Turtle
 end
 
 x = Turtle.new
-x.setDegree(45)
-x.forward(100)
+# x.planoC
+x.openeye()
+x.forward(10)
+puts x.act
+x.forward(20)
+puts x.act
+x.rotater(45)
+x.forward(40)
 x.write "prueba"
