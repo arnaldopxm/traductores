@@ -7,7 +7,9 @@ Autores:
 =end
 
 require_relative "errors.rb"
+require_relative "manage_pbm.rb"
 
+$turtle = nil
 # Super Clase
 class AST
 
@@ -897,8 +899,12 @@ class OpAsignacion < BinaryOP
       x = @right.check table
       # puts "#{@right.find_(@right.table.obj.dec,@right.name).ret.digit}...-..."
       # puts "#{x}..-.."
-      act = right.find_(@right.table.obj.dec,@right.name).ret.digit
-      tok = x[1]
+      if right.find_(@right.table.obj.dec,@right.name).ret.nil?
+        raise ErrorFuncionNull.new
+      else
+        act = right.find_(@right.table.obj.dec,@right.name).ret.digit
+        tok = x[1]
+      end
 
     else
       x = @right.check table
@@ -935,11 +941,18 @@ class Declaracion_ < AST
 
   def check table
     if @ident.class != OpAsignacion
-      if table.exist @ident.digit #and !table.exist('s_$__')
+      # puts table.exist('s_$__')
+      # puts table.exist(@ident.digit).to_s
+      if table.exist @ident.digit and !table.exist('s_$__')
         raise ErrorExistencia.new @ident.digit
       else
+        # puts "epp"
         table.remove 's_$__' if table.exist('s_$__')
-        table.insert @ident.digit, [@tipo.digit,nil]
+        if @tipo.digit=='number'
+          table.insert @ident.digit, [@tipo.digit,0]
+        else
+          table.insert @ident.digit, [@tipo.digit,false]
+        end
       end
     else
       x = @ident.right.check table
@@ -953,7 +966,17 @@ class Declaracion_ < AST
           raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
         end
       else
-        raise ErrorExistencia.new @ident.left.digit
+
+        if table.exist('s_$__')
+          type = @ident.right.check table
+          if type[0] == @tipo.digit
+            table.insert @ident.left.digit, [x,nil]
+          else
+            raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
+          end
+        else
+          raise ErrorExistencia.new @ident.left.digit
+        end
       end
     end
     @table = table
@@ -985,6 +1008,10 @@ class Palabra_ < AST
     @table = table
     return ['palabra_reser',@nombre]
   end
+
+  def digit
+    return @nombre
+  end
 end
 
 # Funciones
@@ -1008,10 +1035,23 @@ class LlamadaFunciones_ < AST
 
   def run table
 
-    # puts @table.obj
     # puts
     ret = @table.obj
     # puts ret.dec.arg0.arg0
+
+  if ['home','openeye','closeeye'].include? @name.digit
+    f = Funcion_.new @name, nil, nil, nil
+    f.run @table, 0
+    return
+  elsif ['rotater','rotatel','forward','backward'].include? @name.digit
+    f = Funcion_.new @name, nil, nil, nil
+    f.run @table, 1, @args
+    return
+  elsif ['arc','setposition'].include? @name.digit
+    f = Funcion_.new @name, nil, nil, nil
+    f.run @table, 2, @args
+    return
+  end
 
     if ret.dec.class == EnSerie
       f = find_ ret.dec, @name
@@ -1120,7 +1160,7 @@ class LlamadaFunciones_ < AST
       # puts '..'
       t = args.check table
       if reserv
-        raise ErrorDeTipo.new args.digit,t,'number' if t != 'number'
+        raise ErrorDeTipo.new args.digit,t,'number' if t[0] != 'number'
       else
         raise ErrorDeTipo.new args.digit,t[0],array[0][1] if t[0] != array[0][1][0]
       end
@@ -1128,7 +1168,7 @@ class LlamadaFunciones_ < AST
     else
       z = recursive args, table
       for i in 0..cant-1
-        raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1][0] != z[i][0]
+        raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1] != z[i][0]
       end
     end
 
@@ -1278,32 +1318,31 @@ class Entrada < Singleton
     print x
 
     if x=~/\Atrue$/
-      if tipo=='boolean' 
+      if tipo=='boolean'
         @table.modify @operand.digit,true
-      else 
-        raise ErrorEntradaTipo.new 
+      else
+        raise ErrorEntradaTipo.new
       end
-      
-    elsif x=~/\Afalse$/
-      if tipo=='boolean' 
-        @table.modify @operand.digit,false
-      else 
-        raise ErrorEntradaTipo.new 
-      end
-      
-    elsif x=~/\A\d+(\.\d+)*$/
-      puts "aca"
-      if tipo=='number' 
-        @table.modify @operand.digit,Float(x)
-      else 
-        puts "aca2"
-        raise ErrorEntradaTipo.new 
-      end
-      
-    else
-      raise ErrorEntrada
-    end
 
+    elsif x=~/\Afalse$/
+      if tipo=='boolean'
+        @table.modify @operand.digit,false
+      else
+        raise ErrorEntradaTipo.new
+      end
+
+    elsif x=~/\A\d+(\.\d+)*$/
+      # puts "aca"
+      if tipo=='number'
+        @table.modify @operand.digit,Float(x)
+      else
+        # puts "aca2"
+        raise ErrorEntradaTipo.new
+      end
+
+    else
+      raise ErrorEntrada.new
+    end
   end
 end
 
@@ -1311,8 +1350,9 @@ end
 class Salida_ < Singleton
   def run table
     if @operand.class == String_
-      x = %Q(@operand.run(@table))
-      print x.class
+      x = @operand.run(@table)[1..-2]
+      x = eval(%Q{"#{x}"})
+      print x
     else
       print @operand.run(@table)
     end
@@ -1337,7 +1377,9 @@ class Salida_S < Singleton
 
   def run table
     if @operand.class == String_
-      puts @operand.run(@table)[1..-2]
+      x = @operand.run(@table)[1..-2]
+      x = eval(%Q{"#{x}"})
+      puts x
     else
       puts @operand.run(@table)
     end
@@ -1376,7 +1418,7 @@ class Bloque < AST
   end
 
   def run table
-    @dec.run @table
+    @dec.run @table if !@dec.nil?
     @ins.run @table
   end
 
@@ -1724,39 +1766,40 @@ class Funcion_ < AST
   end
 
   def run table, num_args, *args
-    x = num_args.clone
-    x = x[1]
 
-    # puts "before: #{x}"
-    # puts ".-.-.-"
-    inic x, args[0], 0, table if num_args[0] != 0
-    # puts "after: #{x}"
-    # puts ".-.-.-"
-
-    x.each do |a|
-      @table.modify a[0], a[1][1] if num_args[0] != 0
-    end
-
-    if @funcion == 'arc'
-
-    elsif @funcion == 'setposition'
-      self.setposition @table
-    elsif @funcion == 'forward'
-      self.forward @table
-    elsif @funcion == 'backward'
-      self.backward arg @table
-    elsif @funcion == 'rotatel'
-      self.rotatel arg @table
-    elsif @funcion == 'rotater'
-      self.rotater arg @table
-    elsif @funcion == 'home'
-      self.home @table
-    elsif @funcion == 'openeye'
-      self.openeye @table
-    elsif @funcion == 'closeeye'
-      self.closeeye @table
+    if @funcion.digit == 'arc'
+      $turtle.arc(Float(args[0].arg0.run table),Float(args[0].arg1.run table))
+    elsif @funcion.digit == 'setposition'
+      $turtle.setPosition(Float(args[0].arg0.run table),Float(args[0].arg1.run table))
+    elsif @funcion.digit == 'forward'
+      $turtle.forward(Float(args[0].run table))
+    elsif @funcion.digit == 'backward'
+      $turtle.backward(Float(args[0].run table))
+    elsif @funcion.digit == 'rotatel'
+      $turtle.rotatel(Float(args[0].run table))
+    elsif @funcion.digit == 'rotater'
+      $turtle.rotater(Float(args[0].run table))
+    elsif @funcion.digit == 'home'
+      $turtle.home
+    elsif @funcion.digit == 'openeye'
+      $turtle.openeye
+    elsif @funcion.digit == 'closeeye'
+      $turtle.closeeye
     else
       # puts "ELSEEE"
+      x = num_args.clone
+      x = x[1]
+
+      # puts "before: #{x}"
+      # puts ".-.-.-"
+      inic x, args[0], 0, table if num_args[0] != 0
+      # puts "after: #{x}"
+      # puts ".-.-.-"
+
+      x.each do |a|
+        @table.modify a[0], a[1][1] if num_args[0] != 0
+      end
+
       ret = @inst.run table
       if !@ret.nil?
         # puts "..-.#{ret}.-.."
@@ -1831,6 +1874,10 @@ end
 class Retina_ < AST
   attr_accessor :dec, :inst
 
+  def write name
+    $turtle.write name
+  end
+
   def initialize d, i
     @dec = d
     @inst = i
@@ -1860,6 +1907,7 @@ class Retina_ < AST
   end
 
   def run table
+    $turtle = Turtle.new
     @inst.run @table.tabla['program']
     #puts @table.tabla
   end
@@ -1896,7 +1944,7 @@ class Retina_ < AST
 end
 
 class TablasDeAlcance
-  attr_accessor :tabla, :padre, :obj
+  attr_accessor :tabla, :padre, :obj, :pbm
 
   def print_
     @tabla.each do |a|
