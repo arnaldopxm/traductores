@@ -178,10 +178,51 @@ class Turtle
     @draw = w
   end
 
+  def arc degree, radius
+
+    degree = 360  if degree > 360
+    draw = @draw
+    act = @act
+    deg = @sent
+    deg_ = deg
+
+    self.closeeye()
+    self.forward radius
+    inic = @act
+
+    self.backward radius
+    self.rotater degree*$pi/180
+    self.forward radius
+    @mtrx[@act[0]][@act[1]] = 1
+    final = @act
+
+    fact = deg
+
+    # @act = inic
+    @mtrx[@act[0]][@act[1]] = 1
+
+    while fact <= degree
+      @act = act
+      self.rotater(1)
+      self.forward(radius)
+      @mtrx[@act[0]][@act[1]] = 1
+      fact += 1
+      # puts @act
+    end
+
+    @draw = draw
+    @act = act
+    @sent = deg
+
+  end
+
 end
 
 # x = Turtle.new
-# # x.rotatel(45)
+# for i in 0..500
+#   x.arc(360,500-i)
+# end
+# x.rotatel(45)
 # x.planoC
 # # x.forward(800)
 #
@@ -189,5 +230,5 @@ end
 #   x.forward(i)
 #   x.rotater(19)
 # end
-#
+
 # x.write "prueba"

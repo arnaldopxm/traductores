@@ -51,11 +51,11 @@ def main
     else
       begin
         x =  ast.check
-        x.print_
+        # x.print_
         ast.run x
         ast.write ARGV[0][0..-5]
-      # rescue RuntimeError => e
-        # puts e
+      rescue RuntimeError => e
+        puts e
       end
     end
   end

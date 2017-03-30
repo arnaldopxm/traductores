@@ -1734,7 +1734,7 @@ class Funcion_ < AST
   def run table, num_args, *args
 
     if @funcion.digit == 'arc'
-
+      $turtle.arc(Float(args[0].arg0.run table),Float(args[0].arg1.run table))
     elsif @funcion.digit == 'setposition'
       $turtle.setPosition(Float(args[0].arg0.run table),Float(args[0].arg1.run table))
     elsif @funcion.digit == 'forward'
