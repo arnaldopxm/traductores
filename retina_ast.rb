@@ -856,11 +856,15 @@ class OpAsignacion < BinaryOP
   def run table
     # puts"...."
     # puts table
-    # puts "...."
+    # puts ".... #{@right.digit}"
+    # puts "PASE"
+    # puts table.tabla
     x = @right.run @table
+    puts x
     if x.nil?
       raise VariableNoInicializada.new
     end
+    puts @left.digit
     table.modify @left.digit, x
   end
 
@@ -872,7 +876,6 @@ class OpAsignacion < BinaryOP
 
     esp = table.find @left.digit
     esp = esp[0]
-
     if @right.class <= UnaryOP
       x = @right.check table
       act = x[0][0]
@@ -961,7 +964,11 @@ class Declaracion_ < AST
       if !table.exist(@ident.left.digit)
         type = @ident.right.check table
         if type[0] == @tipo.digit
-          table.insert @ident.left.digit, [x,nil]
+          if  @tipo.digit=='boolean'
+            table.insert @ident.left.digit, [x,false]
+          else
+            table.insert @ident.left.digit, [x,0]
+          end
         else
           raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
         end
@@ -970,7 +977,11 @@ class Declaracion_ < AST
         if table.exist('s_$__')
           type = @ident.right.check table
           if type[0] == @tipo.digit
-            table.insert @ident.left.digit, [x,nil]
+            if  @tipo.digit=='boolean'
+              table.insert @ident.left.digit, [x,false]
+            else
+              table.insert @ident.left.digit, [x,0]
+            end
           else
             raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
           end
