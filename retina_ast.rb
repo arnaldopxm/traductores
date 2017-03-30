@@ -1307,8 +1307,38 @@ class Entrada < Singleton
   end
 
   def run table
-    #NO FUNCIONA USAR GETS?????
-    $stdin.gets
+    x=$stdin.gets
+    tipo=@table.find  @operand.digit
+    tipo=tipo[0]
+    print tipo
+    print x
+
+    if x=~/\Atrue$/
+      if tipo=='boolean'
+        @table.modify @operand.digit,true
+      else
+        raise ErrorEntradaTipo.new
+      end
+
+    elsif x=~/\Afalse$/
+      if tipo=='boolean'
+        @table.modify @operand.digit,false
+      else
+        raise ErrorEntradaTipo.new
+      end
+
+    elsif x=~/\A\d+(\.\d+)*$/
+      # puts "aca"
+      if tipo=='number'
+        @table.modify @operand.digit,Float(x)
+      else
+        # puts "aca2"
+        raise ErrorEntradaTipo.new
+      end
+
+    else
+      raise ErrorEntrada.new
+    end
   end
 end
 

@@ -5,6 +5,18 @@ Autores:
   -Arnaldo Quintero 13-11150
   -Gabriel Gutierrez 13-10625
 =end
+class ErrorEntrada < RuntimeError
+  def to_s
+    "Error: Se introdujo en la entrada un valor diferente a un numero o un booleano"
+  end
+end
+
+class ErrorEntradaTipo < RuntimeError
+
+  def to_s
+    "Error: El tipo de la entrada no corresponde con el tipo de la variable"
+  end
+end
 
 class VariableNoDeclarada < RuntimeError
   def initialize tok, lin, col
