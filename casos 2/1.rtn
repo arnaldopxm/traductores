@@ -33,13 +33,13 @@ program
                     number steps;
                 do
                     steps;
-                    #backward(steps);
+                    backward(steps);
                 end;
                 forwar = forwar + 1;
             end;
         end;
         writeln "You said: ", forwar;
     end;
-    #forward(0);
+    forward(0);
     writeln "Finished";
 end;

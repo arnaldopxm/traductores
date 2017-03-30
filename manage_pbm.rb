@@ -46,71 +46,90 @@ class Turtle
   end
 
   def forward steps
-    x = Math.cos(@sent)*steps
-    x = Integer(x) + @act[1]
-    x0 = @act[1]
-    y = @act[0]
-    not_eql = true
-    puts "x = #{x}"
-    puts "angle = #{@sent*180/$pi}"
-    puts "act[0] = #{@act[0]}"
+    steps = steps.round
+    if (@sent*180/$pi).round == 90 or (@sent*180/$pi).round == 270
+      # puts "AQUIIIII"
+      x0 = @act[1]
+      y = -steps + @act[0] if (@sent*180/$pi).round == 90
+      y = steps + @act[0] if (@sent*180/$pi).round == 270
+      y0 = @act[0]
+      not_eql = true
 
-    @mtrx[y][x0] = 1 if @draw == 1
-
-    while not_eql
-
-      if x0 > x
-        x0 = x0 - 1
-        y = (x - x0)*Math.tan(@sent) + @act[0]
-        puts (x - x0)
-        y = Integer(y)
-        # puts "#{x0},#{y}"
-      else
-        x0 = x0 + 1
-        y = (x - x0)*Math.tan(@sent).round + @act[0]
-        puts (x - x0)*Math.tan(@sent).round + @act[0]
-        y = Integer(y)
-        # puts "#{x0},#{y}"
-      end
-
-      # @act = [y,x0]
       begin
-        @mtrx[y][x0] = 1 if @draw == 1
+        @mtrx[y0][x0] = 1 if @draw == 1 and !(y0 >1000 or x0 > 1000 or y0 < 0 or x0 < 0)
       rescue
       end
 
-      not_eql = false if x0 == x
+      while not_eql
 
+        if y0 > y
+          # puts y0
+          y0 = y0 - 1
+        else
+          # puts y0
+          y0 = y0 + 1
+        end
+
+        begin
+          @mtrx[y0][x0] = 1 if @draw == 1 and !(y0 >1000 or x0 > 1000 or y0 < 0 or x0 < 0)
+        rescue
+        end
+
+        not_eql = false if y0 == y
+      end
+      @act = [y0,x0]
+
+    else
+      x = Math.cos(@sent)*steps
+      x = Integer(x) + @act[1]
+      x0 = @act[1]
+      y = @act[0]
+      y_max = Math.sin(@sent)*steps
+      y_max = Integer(y_max)
+      not_eql = true
+      # puts "x = #{x}"
+      # puts "angle = #{@sent*180/$pi}"
+      # puts "act[0] = #{@act[0]}"
+
+      begin
+        @mtrx[y][x0] = 1 if @draw == 1 and !(y >1000 or x0 > 1000 or y < 0 or x0 < 0)
+      rescue
+      end
+
+      while not_eql
+
+        if x0 > x
+          x0 = x0 - 1
+          y = (x - x0)*Math.tan(@sent) + @act[0] - y_max
+          y = Integer(y)
+        else
+          x0 = x0 + 1
+          y = (x - x0)*Math.tan(@sent) + @act[0] - y_max
+          y = Integer(y)
+        end
+
+        begin
+
+          if @draw == 1 and !(y >1000 or x0 > 1000 or y < 0 or x0 < 0)
+            # puts "#{x0},#{y}"
+            @mtrx[y][x0] = 1
+          end
+        rescue
+        end
+
+        not_eql = false if x0 == x
+
+      end
+      @act = [y,x0]
     end
-    @act = [y,x0]
-    puts @act.to_s
+    # puts @act.to_s
 
-    # puts "#{x0},#{y}"
   end
 
   def backward steps
-
-    y = @sent
-    if @sent == 0 or @sent == 360
-      x = 180
-    elsif @sent == $pi/2
-      x = 270
-    elsif @sent == $pi
-      x = 0
-    elsif @sent == 3*$pi/2
-      x = 90
-    elsif @sent>0 and @sent<$pi/2
-      x = 270-@sent*180/$pi
-    elsif @sent>$pi/2 and @sent<$pi
-      x = 90+@sent*180/$pi
-    elsif @sent>$pi and @sent<3*$pi/2
-      x = @sent*180/$pi-90
-    elsif @sent>3*$pi/2 and @sent<2*pi
-      x = @sent*180/$pi-180
-    end
-    self.setDegree(x)
+    self.rotater(180)
     forward(steps)
-    self.setDegree(y)
+    self.rotatel(180)
   end
 
   def rotater degree
@@ -143,15 +162,16 @@ class Turtle
     y = @act
     w = @draw
 
-    self.setPosition(0,0)
-    self.forward(500)
-    self.setPosition(0,0)
-    self.backward(500)
+    self.home
+    self.setDegree(90)
+    self.forward 500
+    self.home
+    self.backward 500
+    self.home
     self.setDegree(0)
-    self.setPosition(0,0)
-    self.forward(500)
-    self.setPosition(0,0)
-    self.backward(500)
+    self.forward 500
+    self.home
+    self.backward 500
 
     @act = y
     @sent = x
@@ -160,7 +180,14 @@ class Turtle
 
 end
 
-x = Turtle.new
-x.setDegree(45)
-x.forward(100)
-x.write "prueba"
+# x = Turtle.new
+# # x.rotatel(45)
+# x.planoC
+# # x.forward(800)
+#
+# for i in 1..200
+#   x.forward(i)
+#   x.rotater(19)
+# end
+#
+# x.write "prueba"

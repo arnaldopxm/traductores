@@ -53,8 +53,9 @@ def main
         x =  ast.check
         x.print_
         ast.run x
-      #rescue RuntimeError => e
-        #puts e
+        ast.write ARGV[0][0..-5]
+      # rescue RuntimeError => e
+        # puts e
       end
     end
   end
