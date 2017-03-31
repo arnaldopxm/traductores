@@ -1,9 +1,29 @@
+func masuno(number x) -> number
+begin
+  if x < 0 then
+    return x +1;
+  end;
+  return x;
+end;
+
+func factorial(number i) -> number
+begin
+  if i == 1 then
+    return 1;
+  else
+    with
+      number w;
+    do
+      w = factorial(i-1);
+      # writeln w;
+      return (i * w);
+    end;
+  end;
+end;
+
 program
     with
     do
-        for i from 1 to 100 do
-            forward(i * 4); # Traza una línea por 50 puntos
-            rotater(90); # Gira 90 grados sentido horario
-        end;
+      writeln factorial(10);
     end;
 end;

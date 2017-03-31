@@ -9,9 +9,31 @@ end;
 program
     with do end;
     with
-        number x = 37;
+        number x;
+        number y;
+        number w;
+        number z;
     do
-        x = true;
-        writeln "El mayor es: ", max(9,x);
+        writeln "Introduzca el primer numero:";
+        read x;
+        writeln "";
+        writeln "Introduzca el segundo numero:";
+        read y;
+        writeln "";
+        w = max(y,x);
+        writeln "El mayor es: ", w;
+
+        if (x==w) then
+          z = y;
+        else
+          z = x;
+        end;
+
+        writeln "El menor es: ", z;
+
+        for i from z to w by (w div z) do
+          writeln i;
+          arc(360,i);
+        end;
     end;
 end;

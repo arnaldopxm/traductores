@@ -5,6 +5,14 @@ Autores:
   -Arnaldo Quintero 13-11150
   -Gabriel Gutierrez 13-10625
 =end
+
+class MustReturn < RuntimeError
+  attr_accessor :op, :table
+  def initialize op, table
+    @op = op
+    @table = table
+  end
+end
 class ErrorEntrada < RuntimeError
   def to_s
     "Error: Se introdujo en la entrada un valor diferente a un numero o un booleano"

@@ -1,0 +1,16 @@
+program
+    with
+    do
+      repeat 4 times
+        repeat 4 times
+          rotatel(45);
+          for i from 1 to 100 do
+            forward(i * 2);
+            rotater(90);
+          end;
+          rotatel(45);
+        end;
+        rotatel(90);
+      end;
+    end;
+end;

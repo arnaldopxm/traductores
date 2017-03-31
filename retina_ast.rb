@@ -1,6 +1,5 @@
 =begin
     Clases del AST de retina
-
 Autores:
   -Arnaldo Quintero 13-11150
   -Gabriel Gutierrez 13-10625
@@ -49,8 +48,17 @@ class EnSerie < AST
   end
 
   def run table
-    @arg0.run table
-    @arg1.run table
+    begin
+      @arg0.run table
+    rescue MustReturn => e
+      e.op.run e.table
+    end
+
+    begin
+      @arg1.run table
+    rescue MustReturn => e
+      e.op.run e.table
+    end
   end
 end
 
@@ -151,7 +159,12 @@ class Variables_ < AST
   end
 
   def run table
-    rt=table.find @digit
+    begin
+      rt=table.find @digit
+    rescue
+      rt=@table.find @digit
+    end
+
     rt=rt[1]
     return rt
   end
@@ -233,7 +246,7 @@ class UnaryMenos < UnaryOP
     if @operand.class == Variables_
 
       if table.exist @operand.digit
-        if @operand.check(table) != 'number'
+        if @operand.check(table)[0] != 'number'
           raise ErrorDeTipo.new @operand.digit,@operand.check(table),'number'
         else
           return ['number',"-#{@operand.digit}"]
@@ -856,11 +869,19 @@ class OpAsignacion < BinaryOP
   def run table
     # puts"...."
     # puts table
-    # puts "...."
-    x = @right.run @table
+    # puts ".... #{@right.digit}"
+    # puts "PASE"
+    # puts @right.run @table
+    begin
+      x = @right.run @table
+    rescue MustReturn => e
+      x = e.op.run e.table
+    end
+    # puts x
     if x.nil?
       raise VariableNoInicializada.new
     end
+    # puts @left.digit
     table.modify @left.digit, x
   end
 
@@ -872,7 +893,6 @@ class OpAsignacion < BinaryOP
 
     esp = table.find @left.digit
     esp = esp[0]
-
     if @right.class <= UnaryOP
       x = @right.check table
       act = x[0][0]
@@ -948,7 +968,11 @@ class Declaracion_ < AST
       else
         # puts "epp"
         table.remove 's_$__' if table.exist('s_$__')
-        table.insert @ident.digit, [@tipo.digit,nil]
+        if @tipo.digit=='number'
+          table.insert @ident.digit, [@tipo.digit,0]
+        else
+          table.insert @ident.digit, [@tipo.digit,false]
+        end
       end
     else
       x = @ident.right.check table
@@ -957,7 +981,11 @@ class Declaracion_ < AST
       if !table.exist(@ident.left.digit)
         type = @ident.right.check table
         if type[0] == @tipo.digit
-          table.insert @ident.left.digit, [x,nil]
+          if  @tipo.digit=='boolean'
+            table.insert @ident.left.digit, [x,false]
+          else
+            table.insert @ident.left.digit, [x,0]
+          end
         else
           raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
         end
@@ -966,7 +994,11 @@ class Declaracion_ < AST
         if table.exist('s_$__')
           type = @ident.right.check table
           if type[0] == @tipo.digit
-            table.insert @ident.left.digit, [x,nil]
+            if  @tipo.digit=='boolean'
+              table.insert @ident.left.digit, [x,false]
+            else
+              table.insert @ident.left.digit, [x,0]
+            end
           else
             raise ErrorDeTipo.new @ident.right.digit, type[0], @tipo.digit
           end
@@ -1057,13 +1089,15 @@ class LlamadaFunciones_ < AST
       #puts "AAAAAA"
       if ret.dec.funcion.digit == @name.digit
         #puts "es la que es"
-        ret.dec.run table
+        ret.dec.run table, @num_args, @args
       end
     end
 
   end
 
   def find_ dec, name
+
+    return dec if dec.class == Funcion_
 
     if dec.arg0.class == Funcion_
       if dec.arg0.funcion.digit == name.digit
@@ -1164,7 +1198,12 @@ class LlamadaFunciones_ < AST
     else
       z = recursive args, table
       for i in 0..cant-1
-        raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1] != z[i][0]
+        if array[i][1].class == Array
+        #############
+          raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1][0] != z[i][0]
+        else
+          raise ErrorDeTipo.new z[i][1],z[i][0],array[i][1][0] if array[i][1] != z[i][0]
+        end
       end
     end
 
@@ -1245,9 +1284,9 @@ class Return_ < Singleton
   end
 
   def run table
-    # puts @table.tabla
-    # puts @operand.run @table
     return @operand.run @table
+  ensure
+    raise MustReturn.new @operand, @table
   end
 
   def check table
@@ -1310,8 +1349,8 @@ class Entrada < Singleton
     x=$stdin.gets
     tipo=@table.find  @operand.digit
     tipo=tipo[0]
-    print tipo
-    print x
+    # print tipo
+    # print x
 
     if x=~/\Atrue$/
       if tipo=='boolean'
@@ -1345,12 +1384,19 @@ end
 # Salida
 class Salida_ < Singleton
   def run table
-    if @operand.class == String_
-      x = @operand.run(@table)[1..-2]
+    print_ @operand
+  end
+
+  def print_ arg
+    if arg.class == String_
+      x = arg.run(@table)[1..-2]
       x = eval(%Q{"#{x}"})
       print x
+    elsif arg.class == EnSerie
+      print_ arg.arg0
+      print_ arg.arg1
     else
-      print @operand.run(@table)
+      print arg.run(@table)
     end
   end
 
@@ -1372,12 +1418,24 @@ end
 class Salida_S < Singleton
 
   def run table
-    if @operand.class == String_
-      x = @operand.run(@table)[1..-2]
+    print_ @operand
+    puts ""
+  end
+
+  def print_ arg
+    if arg.class == String_
+      x = arg.run(@table)[1..-2]
       x = eval(%Q{"#{x}"})
-      puts x
+      print x
+    elsif arg.class == EnSerie
+      print_ arg.arg0
+      print_ arg.arg1
     else
-      puts @operand.run(@table)
+      begin
+        print arg.run(@table)
+      rescue MustReturn => e
+        print e.op.run e.table
+      end
     end
   end
 
@@ -1414,8 +1472,16 @@ class Bloque < AST
   end
 
   def run table
-    @dec.run @table if !@dec.nil?
-    @ins.run @table
+    begin
+      @dec.run @table if !@dec.nil?
+    rescue MustReturn => e
+      e.op.run e.table
+    end
+    begin
+      @ins.run @table if !@ins.nil?
+    rescue MustReturn => e
+      e.op.run e.table
+    end
   end
 
 
@@ -1425,7 +1491,7 @@ class Bloque < AST
     t.tabla['s_$__'] = true
     @dec.check t if @dec.respond_to? :check
     insert table, t
-    @ins.check t
+    @ins.check t if @ins.respond_to? :check
     @table = t
   end
 
@@ -1578,7 +1644,11 @@ class IteracionDeterminada < AST
      while l1<=l2
       #Actualizo la tabla con el valor que me da el for.
       @table.modify x.digit, l1
-      @bloque.run @table
+      begin
+        @bloque.run @table
+      rescue MustReturn => e
+        e.op.run e.table
+      end
       l1+=by
      end
   end
@@ -1796,7 +1866,11 @@ class Funcion_ < AST
         @table.modify a[0], a[1][1] if num_args[0] != 0
       end
 
+      # begin
       ret = @inst.run table
+      # rescue MustReturn
+      # end
+
       if !@ret.nil?
         # puts "..-.#{ret}.-.."
         return ret
