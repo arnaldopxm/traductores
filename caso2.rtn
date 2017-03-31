@@ -1,29 +1,12 @@
-func masuno(number x) -> number
-begin
-  if x < 0 then
-    return x +1;
-  end;
-  return x;
-end;
-
-func factorial(number i) -> number
-begin
-  if i == 1 then
-    return 1;
-  else
-    with
-      number w;
-    do
-      w = factorial(i-1);
-      # writeln w;
-      return (i * w);
-    end;
-  end;
-end;
-
 program
-    with
-    do
-      writeln factorial(10);
-    end;
+  repeat 180 times
+    forward(300);
+    rotater(30);
+    forward(60);
+    rotatel(60);
+    forward(150);
+    rotater(30);
+    home();
+    rotater(2);
+  end;
 end;
